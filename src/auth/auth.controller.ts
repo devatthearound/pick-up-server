@@ -33,6 +33,7 @@ export class AuthController {
     return this.authService.login(loginDto, response);
   }
 
+
   @ApiOperation({ summary: '리프레시 토큰 발급' })
   @ApiResponse({ status: 200, description: '리프레시 토큰 발급 성공' })
   @ApiResponse({ status: 401, description: '인증되지 않은 요청' })
@@ -40,9 +41,28 @@ export class AuthController {
   async refreshTokens(
     @Body('refreshToken') refreshToken: string,
     @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.refreshTokens(refreshToken);
-  }
+  const tokens = await this.authService.refreshTokens(refreshToken);
+  
+  // 새 토큰으로 쿠키 업데이트
+  response.cookie('access_token', tokens.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000 // 15분
+  });
+
+  response.cookie('refresh_token', tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
+  });
+  
+  return { message: '토큰이 갱신되었습니다' };
+}
+
 
   @ApiOperation({ summary: '로그아웃' })
   @ApiResponse({ status: 200, description: '로그아웃 성공' })

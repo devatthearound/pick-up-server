@@ -216,31 +216,39 @@ export class AuthService {
         where: { refreshToken, isValid: true },
         relations: ['user'],
       });
-
+  
       if (!session) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다');
       }
-
+  
       if (session.expiresAt < new Date()) {
         session.isValid = false;
         await this.userSessionRepository.save(session);
-        throw new UnauthorizedException('Refresh token expired');
+        throw new UnauthorizedException('리프레시 토큰이 만료되었습니다');
       }
-
+  
+      // 사용자 활성 상태 확인 추가
+      if (!session.user.isActive) {
+        throw new UnauthorizedException('비활성화된 계정입니다');
+      }
+  
+      // 기존 세션 무효화 (토큰 순환을 위해)
+      session.isValid = false;
+      await this.userSessionRepository.save(session);
+  
       // 새로운 토큰 발급
       const tokens = await this.createTokens(
         session.user,
         session.deviceInfo,
         session.ipAddress,
       );
-
-      // 이전 세션 무효화
-      session.isValid = false;
-      await this.userSessionRepository.save(session);
-
+  
       return tokens;
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다');
     }
   }
 
