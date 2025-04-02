@@ -2,9 +2,11 @@ import { Controller, Post, Body, Res, UseGuards, Get, Request, Headers, Ip, Req 
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto, UserRole } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Roles } from './decorators/roles.decorator';
+import { RolesGuard } from './guards/roles.guard';
 
 @ApiTags('인증')
 @Controller('auth')
@@ -61,5 +63,28 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getProfile(@Request() req) {
     return req.user;
+  }
+
+  // 이제 역할별로 접근을 제한하는 엔드포인트 예시
+  @ApiOperation({ summary: '고객 전용 정보' })
+  @ApiResponse({ status: 200, description: '고객 전용 정보 조회 성공' })
+  @ApiResponse({ status: 403, description: '권한 없음' })
+  @ApiBearerAuth()
+  @Get('customer-info')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  async getCustomerInfo(@Request() req) {
+    return { message: '이 정보는 고객만 볼 수 있습니다.', userId: req.user.id };
+  }
+
+  @ApiOperation({ summary: '사장님 전용 정보' })
+  @ApiResponse({ status: 200, description: '사장님 전용 정보 조회 성공' })
+  @ApiResponse({ status: 403, description: '권한 없음' })
+  @ApiBearerAuth()
+  @Get('owner-info')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OWNER)
+  async getOwnerInfo(@Request() req) {
+    return { message: '이 정보는 사장님만 볼 수 있습니다.', userId: req.user.id };
   }
 }

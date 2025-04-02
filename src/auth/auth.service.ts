@@ -22,7 +22,55 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
+  private validatePassword(password: string): { isValid: boolean; message: string } {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    const validations = [
+      {
+        isValid: password.length >= minLength,
+        message: `비밀번호는 최소 ${minLength}자 이상이어야 합니다.`
+      },
+      {
+        isValid: hasUpperCase,
+        message: '대문자를 포함해야 합니다.'
+      },
+      {
+        isValid: hasLowerCase,
+        message: '소문자를 포함해야 합니다.'
+      },
+      {
+        isValid: hasNumbers,
+        message: '숫자를 포함해야 합니다.'
+      },
+      {
+        isValid: hasSpecialChar,
+        message: '특수문자를 포함해야 합니다.'
+      }
+    ];
+
+    const failedValidations = validations.filter(v => !v.isValid);
+    
+    if (failedValidations.length > 0) {
+      return {
+        isValid: false,
+        message: `비밀번호 요구사항이 충족되지 않았습니다: ${failedValidations.map(v => v.message).join(', ')}`
+      };
+    }
+
+    return { isValid: true, message: '유효한 비밀번호입니다.' };
+  }
+
   async register(registerDto: RegisterDto, response: Response) {
+    // 비밀번호 정책 검증 추가
+    const passwordValidation = this.validatePassword(registerDto.password);
+    if (!passwordValidation.isValid) {
+      throw new UnauthorizedException(passwordValidation.message);
+    }
+
     const user = await this.usersService.register(registerDto);
     
     // createTokens 메서드 사용
@@ -112,29 +160,49 @@ export class AuthService {
   }
 
   async createTokens(user: User, deviceInfo: any, ipAddress: string) {
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, email: user.email },
-      { expiresIn: '15m' }
-    );
-
-    const refreshToken = this.jwtService.sign(
-      { sub: user.id },
-      { expiresIn: '7d' }
-    );
-
+    // 사용자 역할 결정
+    let role;
+    if (user.customerProfile) {
+      role = UserRole.CUSTOMER;
+    } else if (user.ownerProfile) {
+      role = UserRole.OWNER;
+    }
+  
     // 세션 저장
     const session = new UserSession();
     session.user = user;
     session.userId = user.id;
-    session.sessionToken = accessToken;
-    session.refreshToken = refreshToken;
     session.deviceInfo = deviceInfo;
     session.ipAddress = ipAddress;
     session.lastActivityAt = new Date();
     session.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7일
     
     await this.userSessionRepository.save(session);
-
+  
+    // 토큰에 역할 및 세션 ID 포함
+    const accessToken = this.jwtService.sign(
+      { 
+        sub: user.id, 
+        email: user.email,
+        role, 
+        sessionId: session.id 
+      },
+      { expiresIn: '15m' }
+    );
+  
+    const refreshToken = this.jwtService.sign(
+      { 
+        sub: user.id,
+        role,
+        sessionId: session.id 
+      },
+      { expiresIn: '7d' }
+    );
+  
+    session.sessionToken = accessToken;
+    session.refreshToken = refreshToken;
+    await this.userSessionRepository.save(session);
+  
     return {
       accessToken,
       refreshToken,
