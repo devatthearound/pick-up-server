@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { StoreModule } from './store/store.module';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 import * as crypto from 'crypto';
@@ -36,6 +37,7 @@ import * as crypto from 'crypto';
     }),
     UsersModule,
     AuthModule,
+    StoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],
