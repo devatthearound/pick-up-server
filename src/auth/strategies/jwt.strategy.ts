@@ -7,12 +7,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
+import { UserSession } from '../../session/entities/user-session.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(UserSession)
+    private sessionRepository: Repository<UserSession>,
     private configService: ConfigService,
   ) {
     super({
@@ -29,17 +32,37 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     try {
-      // 사용자 조회 및 역할 정보 포함
+      // 1. 사용자 조회 및 활성 상태 확인
       const user = await this.usersRepository.findOne({ 
-        where: { id: payload.sub },
+        where: { id: payload.sub, isActive: true },
         relations: ['customerProfile', 'ownerProfile'],
       });
 
       if (!user) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('사용자를 찾을 수 없거나 비활성화된 계정입니다');
       }
 
-      // 사용자 역할 결정
+      // 2. 세션 유효성 확인
+      const session = await this.sessionRepository.findOne({
+        where: { 
+          id: payload.sessionId,
+          isValid: true,
+          userId: user.id
+        }
+      });
+
+      if (!session) {
+        throw new UnauthorizedException('유효하지 않은 세션입니다');
+      }
+
+      // 3. 세션 만료 여부 확인
+      if (session.expiresAt < new Date()) {
+        session.isValid = false;
+        await this.sessionRepository.save(session);
+        throw new UnauthorizedException('세션이 만료되었습니다');
+      }
+
+      // 4. 역할 결정
       let role;
       if (user.customerProfile) {
         role = 'customer';
@@ -49,15 +72,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role = 'unknown';
       }
 
-      // JWT 페이로드에 역할 정보를 추가하고 반환
+      // 5. 검증된 사용자 정보 반환
       return { 
         id: payload.sub, 
         email: payload.email,
         role,
         sessionId: payload.sessionId,
+        isActive: user.isActive,
       };
     } catch (error) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('인증에 실패했습니다');
     }
   }
 }

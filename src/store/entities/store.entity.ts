@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { OwnerProfile } from '../../users/entities/owner-profile.entity';
+import { StoreAmenity } from './store-amenity.entity';
 
 @Entity('stores')
 export class Store {
@@ -63,4 +64,7 @@ export class Store {
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
+  
+  @OneToMany(() => StoreAmenity, storeAmenity => storeAmenity.store)
+  storeAmenities: StoreAmenity[];
 }

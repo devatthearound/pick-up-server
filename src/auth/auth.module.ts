@@ -11,9 +11,12 @@ import { UserSession } from '../session/entities/user-session.entity';
 import { ConfigService } from '@nestjs/config';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { PassportModule } from '@nestjs/passport';
+
 @Module({
   imports: [
     UsersModule,
+    PassportModule,
     TypeOrmModule.forFeature([User, UserSession]),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -25,6 +28,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   ],
   providers: [AuthService, JwtStrategy, RolesGuard, JwtAuthGuard],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, JwtStrategy, RolesGuard, JwtAuthGuard],
 })
 export class AuthModule {}
