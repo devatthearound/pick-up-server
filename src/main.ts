@@ -12,21 +12,27 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   
-  // 프론트엔드 주소 설정
+  // 프론트엔드 주소가 환경변수에 제대로 설정되어 있는지 확인
+  const frontendUrl = configService.get('FRONTEND_URL');
+  console.log('Frontend URL:', frontendUrl); // 디버깅용
+  
   app.setGlobalPrefix('api');
-  // CORS 설정
+  
+  // CORS 설정 - 배포된 프론트엔드 주소 명시적 추가
   app.enableCors({
     origin: [
-      configService.get('FRONTEND_URL'),
-      'http://localhost:3001',
+      frontendUrl,
+      'http://localhost:3000',
+      'http://pickup-rb-1495753177.ap-northeast-2.elb.amazonaws.com', // 배포된 프론트엔드 URL 명시적 추가
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
   
   // 쿠키 파서 미들웨어 추가
   app.use(cookieParser());
   
-
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,
@@ -35,7 +41,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
   
-  // Swagger API 문서화 설정
+  // Swagger 설정은 그대로 유지
   const config = new DocumentBuilder()
     .setTitle('픽업 서버 API')
     .setDescription('픽업 서버 API 문서')
@@ -43,11 +49,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-
-  // JSON 파일로 저장
   fs.writeFileSync('./swagger-spec.json', JSON.stringify(document, null, 2));
-
-  // Swagger UI 설정 (선택사항 - 웹에서 문서 확인용)
   SwaggerModule.setup('api-docs', app, document);
   
   const port = configService.get('port') || 3001;

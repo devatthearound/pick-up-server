@@ -43,25 +43,27 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-  const tokens = await this.authService.refreshTokens(refreshToken);
-  
-  // 새 토큰으로 쿠키 업데이트
-  response.cookie('access_token', tokens.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60 * 1000 // 15분
-  });
+    const tokens = await this.authService.refreshTokens(refreshToken);
+    
+    // 새 토큰으로 쿠키 업데이트
+    response.cookie('access_token', tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none', // strict에서 none으로 변경
+      path: '/', // path 추가
+      maxAge: 15 * 60 * 1000 // 15분
+    });
 
-  response.cookie('refresh_token', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
-  });
-  
-  return { message: '토큰이 갱신되었습니다' };
-}
+    response.cookie('refresh_token', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none', // strict에서 none으로 변경
+      path: '/', // path 추가
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
+    });
+    
+    return { message: '토큰이 갱신되었습니다' };
+  }
 
 
   @ApiOperation({ summary: '로그아웃' })

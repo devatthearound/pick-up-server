@@ -123,14 +123,16 @@ export class AuthService {
     response.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none', // strict에서 none으로 변경
+      path: '/', // path 추가
       maxAge: 15 * 60 * 1000 // 15분
     });
-
+  
     response.cookie('refresh_token', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none', // strict에서 none으로 변경
+      path: '/', // path 추가
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
     });
   }
