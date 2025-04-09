@@ -2,8 +2,8 @@ import { IsEmail, IsString, MinLength, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum UserRole {
-  CUSTOMER = 'CUSTOMER',
-  OWNER = 'OWNER'
+  CUSTOMER = 'customer',
+  OWNER = 'owner'
 }
 
 export class RegisterDto {

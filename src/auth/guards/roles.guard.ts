@@ -25,9 +25,9 @@ export class RolesGuard implements CanActivate {
     if (!user) {
       throw new ForbiddenException('인증이 필요합니다.');
     }
+    console.log("user", user);
     
     const hasRole = requiredRoles.some((role) => user.role === role);
-    
     if (!hasRole) {
       throw new ForbiddenException('이 작업을 수행할 권한이 없습니다.');
     }

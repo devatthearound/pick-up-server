@@ -41,6 +41,7 @@ export class StoreController {
   @Get('owner/my-stores')
   async getMyStores(@Request() req) {
     const ownerId = req.user.ownerId;
+    console.log("ownerId", ownerId);
     return this.storeService.getStoresByOwnerId(ownerId);
   }
 
