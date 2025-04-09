@@ -9,7 +9,7 @@ import { MenuItem } from './entities/menu-item.entity';
 import { Store } from '../store/entities/store.entity';
 import { UserSession } from '../session/entities/user-session.entity';
 import { StoreModule } from 'src/store/store.module';
-
+import { S3Service } from '../common/services/s3.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -18,10 +18,10 @@ import { StoreModule } from 'src/store/store.module';
       Store, 
       UserSession
     ]),
-    StoreModule,
+    StoreModule
   ],
   controllers: [MenuCategoryController, MenuItemController],
-  providers: [MenuCategoryService, MenuItemService],
+  providers: [MenuCategoryService, MenuItemService, S3Service],
   exports: [MenuCategoryService, MenuItemService],
 })
 export class MenuModule {}

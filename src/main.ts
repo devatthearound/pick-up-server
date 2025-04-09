@@ -6,11 +6,14 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   
+  // 프론트엔드 주소 설정
+  app.setGlobalPrefix('api');
   // CORS 설정
   app.enableCors({
     origin: [
@@ -40,7 +43,12 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+
+  // JSON 파일로 저장
+  fs.writeFileSync('./swagger-spec.json', JSON.stringify(document, null, 2));
+
+  // Swagger UI 설정 (선택사항 - 웹에서 문서 확인용)
+  SwaggerModule.setup('api-docs', app, document);
   
   const port = configService.get('port') || 3001;
   await app.listen(port);

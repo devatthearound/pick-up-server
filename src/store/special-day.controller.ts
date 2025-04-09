@@ -65,7 +65,7 @@ export class SpecialDaysController {
     @Body() createSpecialDayDto: CreateSpecialDayDto,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     return this.specialDaysService.create(storeId, createSpecialDayDto);
   }
@@ -87,7 +87,7 @@ export class SpecialDaysController {
     @Body() updateSpecialDayDto: UpdateSpecialDayDto,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     // 해당 특별 영업일/휴무일이 지정된 매장에 소속되어 있는지 확인
     const specialDay = await this.specialDaysService.findOne(id);
@@ -113,7 +113,7 @@ export class SpecialDaysController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     // 해당 특별 영업일/휴무일이 지정된 매장에 소속되어 있는지 확인
     const specialDay = await this.specialDaysService.findOne(id);
@@ -141,7 +141,7 @@ export class SpecialDaysController {
     @Query('endDate') endDate: string,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     // 날짜 형식 검증
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -171,7 +171,7 @@ export class SpecialDaysController {
     @Param('storeId', ParseIntPipe) storeId: number,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     return this.specialDaysService.removeAllByStoreId(storeId);
   }

@@ -180,24 +180,24 @@ export class AuthService {
     await this.userSessionRepository.save(session);
   
     // 토큰에 역할 및 세션 ID 포함
-    const accessToken = this.jwtService.sign(
-      { 
-        sub: user.id, 
-        email: user.email,
-        role, 
-        sessionId: session.id 
-      },
-      { expiresIn: '15m' }
-    );
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role,
+      sessionId: session.id,
+      ...(role === UserRole.OWNER && {
+        ownerId: user.ownerProfile?.id
+      })
+    };
   
-    const refreshToken = this.jwtService.sign(
-      { 
-        sub: user.id,
-        role,
-        sessionId: session.id 
-      },
-      { expiresIn: '7d' }
-    );
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        expiresIn: '15m'
+      }),
+      this.jwtService.signAsync(payload, {
+        expiresIn: '7d'
+      })
+    ]);
   
     session.sessionToken = accessToken;
     session.refreshToken = refreshToken;

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, FindManyOptions, FindOptionsWhere } from 'typeorm';
 import { Store } from './entities/store.entity';
@@ -7,6 +7,8 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { StoreQueryDto, SortBy, SortOrder } from './dto/store-query.dto';
 import { OwnerProfile } from '../users/entities/owner-profile.entity';
+import { S3Service } from '../common/services/s3.service';
+import { Multer } from 'multer';
 
 @Injectable()
 export class StoreService {
@@ -17,6 +19,7 @@ export class StoreService {
     private categoryRepository: Repository<StoreCategory>,
     @InjectRepository(OwnerProfile)
     private ownerProfileRepository: Repository<OwnerProfile>,
+    private s3Service: S3Service,
   ) {}
 
   async findAll(queryDto: StoreQueryDto) {
@@ -89,12 +92,22 @@ export class StoreService {
     });
   }
 
-  async create(ownerId: number, createStoreDto: CreateStoreDto) {
+  async create(
+    ownerId: number, 
+    createStoreDto: CreateStoreDto,
+    files: {
+      businessRegistrationFile?: Express.Multer.File;
+      logoImage?: Express.Multer.File;
+      bannerImage?: Express.Multer.File;
+    }
+  ) {
+    console.log(ownerId);
     // 점주 프로필 확인
     const ownerProfile = await this.ownerProfileRepository.findOne({
       where: { id: ownerId },
     });
     
+    console.log(ownerProfile);
     if (!ownerProfile) {
       throw new NotFoundException(`점주 ID ${ownerId}를 찾을 수 없습니다.`);
     }
@@ -115,60 +128,80 @@ export class StoreService {
       throw new ConflictException(`이미 등록된 사업자 등록 번호입니다: ${createStoreDto.businessRegistrationNumber}`);
     }
     
-    // 저장할 데이터 준비
+    // Upload files to S3
+    const businessRegistrationUrl = files.businessRegistrationFile ? 
+      await this.s3Service.uploadFile(files.businessRegistrationFile, 'business-registration') : null;
+    
+    const logoImageUrl = files.logoImage ? 
+      await this.s3Service.uploadFile(files.logoImage, 'logo') : null;
+    
+    const bannerImageUrl = files.bannerImage ? 
+      await this.s3Service.uploadFile(files.bannerImage, 'banner') : null;
+
+    console.log({
+      ...createStoreDto,
+      ownerId : ownerId,
+      isVerified: false,
+      businessRegistrationFile: businessRegistrationUrl,
+      logoImage: logoImageUrl,
+      bannerImage: bannerImageUrl,
+    });
     const newStore = this.storeRepository.create({
       ...createStoreDto,
-      ownerId,
-      isVerified: false, // 관리자 인증 필요
-    });
+      ownerId,  // owner 객체 대신 직접 ownerId 설정
+      isVerified: false,
+      businessRegistrationFile: businessRegistrationUrl,
+      logoImage: logoImageUrl,
+      bannerImage: bannerImageUrl,
+    } as Store);
     
     return this.storeRepository.save(newStore);
   }
 
-  async update(id: number, ownerId: number, updateStoreDto: UpdateStoreDto) {
+  async update(
+    id: number,
+    ownerId: number,
+    updateStoreDto: UpdateStoreDto,
+    files: {
+      logoImage?: Express.Multer.File;
+      bannerImage?: Express.Multer.File;
+    }
+  ) {
     const store = await this.storeRepository.findOne({
-      where: { id },
+      where: { id, ownerId },
     });
-    
+
     if (!store) {
-      throw new NotFoundException(`상점 ID ${id}를 찾을 수 없습니다.`);
+      throw new NotFoundException('Store not found');
     }
-    
-    // 권한 확인: 본인 소유의 상점인지 확인
-    if (store.ownerId !== ownerId) {
-      throw new BadRequestException('해당 상점을 수정할 권한이 없습니다.');
-    }
-    
-    // 사업자 등록 번호 변경 시 중복 확인
-    if (updateStoreDto.businessRegistrationNumber && updateStoreDto.businessRegistrationNumber !== store.businessRegistrationNumber) {
-      const existingStore = await this.findByBusinessRegistrationNumber(updateStoreDto.businessRegistrationNumber);
-      
-      if (existingStore && existingStore.id !== id) {
-        throw new ConflictException(`이미 등록된 사업자 등록 번호입니다: ${updateStoreDto.businessRegistrationNumber}`);
+
+    let logoImageUrl = store.logoImage;
+    let bannerImageUrl = store.bannerImage;
+
+    if (files.logoImage) {
+      const logoUrl = await this.s3Service.uploadFile(files.logoImage, 'logo');
+      if (!logoUrl) {
+        throw new Error('Failed to upload logo image');
       }
+      logoImageUrl = logoUrl;
     }
-    
-    // 카테고리 ID 변경 시 존재 여부 확인
-    if (updateStoreDto.categoryId && updateStoreDto.categoryId !== store.categoryId) {
-      const category = await this.categoryRepository.findOne({
-        where: { id: updateStoreDto.categoryId },
-      });
-      
-      if (!category) {
-        throw new NotFoundException(`카테고리 ID ${updateStoreDto.categoryId}를 찾을 수 없습니다.`);
+
+    if (files.bannerImage) {
+      const bannerUrl = await this.s3Service.uploadFile(files.bannerImage, 'banner');
+      if (!bannerUrl) {
+        throw new Error('Failed to upload banner image');
       }
+      bannerImageUrl = bannerUrl;
     }
-    
-    // isVerified는 관리자만 변경 가능하므로 일반 업데이트에서는 제외
-    delete updateStoreDto.isVerified;
-    
-    // 데이터 업데이트
-    await this.storeRepository.update(id, updateStoreDto);
-    
-    return this.storeRepository.findOne({
-      where: { id },
-      relations: ['owner'],
+
+    const updatedStore = await this.storeRepository.save({
+      ...store,
+      ...updateStoreDto,
+      logoImage: logoImageUrl,
+      bannerImage: bannerImageUrl,
     });
+
+    return updatedStore;
   }
 
   async remove(id: number, ownerId: number) {

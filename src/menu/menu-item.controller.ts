@@ -9,16 +9,20 @@ import {
   Patch,
   UseGuards,
   ParseIntPipe,
-  Request
+  Request,
+  UseInterceptors,
+  UploadedFile
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { MenuItemService } from './menu-item.service';
 import { CreateMenuItemDto, UpdateMenuItemDto, MenuItemQueryDto } from './dto/menu-item.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/dto/register.dto';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer';
+import { Transform, Type } from 'class-transformer';
 @ApiTags('메뉴 아이템')
 @Controller('menu-items')
 export class MenuItemController {
@@ -87,23 +91,28 @@ export class MenuItemController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER)
   @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: '메뉴 아이템 생성' })
   @ApiResponse({ status: 201, description: '메뉴 아이템이 생성되었습니다.' })
   @ApiResponse({ status: 403, description: '해당 매장에 대한 권한이 없습니다.' })
   async create(
     @Param('storeId', ParseIntPipe) storeId: number,
     @Body() createMenuItemDto: CreateMenuItemDto,
+    @UploadedFile() image: Express.Multer.File,
     @Request() req
   ) {
-    // 매장 소유 확인
-    await this.menuItemService.verifyStoreOwnership(storeId, req.user.id);
-    return this.menuItemService.create(storeId, createMenuItemDto);
+    console.log("req.user", req.user);
+    await this.menuItemService.verifyStoreOwnership(storeId, req.user.ownerId);
+    return this.menuItemService.create(storeId, createMenuItemDto, image);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER)
   @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: '메뉴 아이템 수정' })
   @ApiResponse({ status: 200, description: '메뉴 아이템이 수정되었습니다.' })
   @ApiResponse({ status: 403, description: '해당 메뉴에 대한 권한이 없습니다.' })
@@ -111,12 +120,12 @@ export class MenuItemController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateMenuItemDto: UpdateMenuItemDto,
+    @UploadedFile() image: Express.Multer.File,
     @Request() req
   ) {
-    // 메뉴 소유 확인
     const menuItem = await this.menuItemService.findOne(id);
-    await this.menuItemService.verifyStoreOwnership(menuItem.storeId, req.user.id);
-    return this.menuItemService.update(id, updateMenuItemDto);
+    await this.menuItemService.verifyStoreOwnership(menuItem.storeId, req.user.ownerId);
+    return this.menuItemService.update(id, updateMenuItemDto, image);
   }
 
   @Patch(':id/stock')
@@ -134,7 +143,7 @@ export class MenuItemController {
   ) {
     // 메뉴 소유 확인
     const menuItem = await this.menuItemService.findOne(id);
-    await this.menuItemService.verifyStoreOwnership(menuItem.storeId, req.user.id);
+    await this.menuItemService.verifyStoreOwnership(menuItem.storeId, req.user.ownerId);
     return this.menuItemService.updateStock(id, quantity);
   }
 
@@ -152,7 +161,7 @@ export class MenuItemController {
   ) {
     // 메뉴 소유 확인
     const menuItem = await this.menuItemService.findOne(id);
-    await this.menuItemService.verifyStoreOwnership(menuItem.storeId, req.user.id);
+    await this.menuItemService.verifyStoreOwnership(menuItem.storeId, req.user.ownerId);
     return this.menuItemService.remove(id);
   }
 }

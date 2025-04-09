@@ -20,6 +20,11 @@ import { StoreOperatingHour } from './entities/store-operating-hour.entity';
 import { StoreSpecialDay } from './entities/store-special-day.entity';
 import { Amenity } from './entities/amenity.entity';
 import { StoreAmenity } from './entities/store-amenity.entity';
+import { MulterModule } from '@nestjs/platform-express';
+import { S3Service } from '../common/services/s3.service';
+import { diskStorage } from 'multer';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Module({
   imports: [
@@ -35,6 +40,25 @@ import { StoreAmenity } from './entities/store-amenity.entity';
       StoreAmenity
     ]),
     AuthModule,
+    MulterModule.register({
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const uploadDir = './uploads/temp';
+          // 임시 디렉토리가 없으면 생성
+          if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+          }
+          cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+          cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        }
+      }),
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
   ],
   controllers: [
     StoreController, 
@@ -48,7 +72,8 @@ import { StoreAmenity } from './entities/store-amenity.entity';
     CategoryService, 
     OperatingHoursService, 
     SpecialDaysService,
-    AmenityService
+    AmenityService,
+    S3Service
   ],
   exports: [StoreService],
 })

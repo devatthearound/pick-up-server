@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, ParseIntPipe, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, ParseIntPipe, NotFoundException, ForbiddenException, UploadedFile, UseInterceptors, UploadedFiles, BadRequestException } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -8,6 +8,9 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/dto/register.dto';
+import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import { Multer } from 'multer';
 
 @ApiTags('상점')
 @Controller('stores')
@@ -37,7 +40,7 @@ export class StoreController {
   @Roles(UserRole.OWNER)
   @Get('owner/my-stores')
   async getMyStores(@Request() req) {
-    const ownerId = req.user.id;
+    const ownerId = req.user.ownerId;
     return this.storeService.getStoresByOwnerId(ownerId);
   }
 
@@ -47,13 +50,35 @@ export class StoreController {
   @ApiResponse({ status: 401, description: '인증되지 않은 요청' })
   @ApiResponse({ status: 403, description: '권한 없음' })
   @ApiResponse({ status: 409, description: '사업자 등록 번호 중복' })
+  @ApiConsumes('multipart/form-data')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER)
   @Post()
-  async create(@Request() req, @Body() createStoreDto: CreateStoreDto) {
-    const ownerId = req.user.id;
-    return this.storeService.create(ownerId, createStoreDto);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'businessRegistrationFile', maxCount: 1 },
+      { name: 'logoImage', maxCount: 1 },
+      { name: 'bannerImage', maxCount: 1 }
+    ])
+  )
+  async create(
+    @Request() req,
+    @Body('data') data: string,
+    @UploadedFiles() files: {
+      businessRegistrationFile?: Express.Multer.File[];
+      logoImage?: Express.Multer.File[];
+      bannerImage?: Express.Multer.File[];
+    }
+  ) {
+    const createStoreDto = JSON.parse(data) as CreateStoreDto;
+    const ownerId = req.user.ownerId;
+    
+    return this.storeService.create(ownerId, createStoreDto, {
+      businessRegistrationFile: files.businessRegistrationFile?.[0],
+      logoImage: files.logoImage?.[0],
+      bannerImage: files.bannerImage?.[0]
+    });
   }
 
   @ApiOperation({ summary: '상점 정보 수정' })
@@ -67,13 +92,46 @@ export class StoreController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OWNER)
   @Patch(':id')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logoImage', maxCount: 1 },
+      { name: 'bannerImage', maxCount: 1 }
+    ])
+  )
   async update(
     @Request() req,
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateStoreDto: UpdateStoreDto,
+    @Body('data') data: string,
+    @UploadedFiles() files: {
+      logoImage?: Express.Multer.File[];
+      bannerImage?: Express.Multer.File[];
+    }
   ) {
-    const ownerId = req.user.id;
-    return this.storeService.update(id, ownerId, updateStoreDto);
+    console.log('업로드된 파일 정보:', {
+      logoImage: files.logoImage?.[0] ? {
+        originalname: files.logoImage[0].originalname,
+        mimetype: files.logoImage[0].mimetype,
+        size: files.logoImage[0].size,
+        buffer: files.logoImage[0].buffer?.length,
+        fieldname: files.logoImage[0].fieldname
+      } : null,
+      bannerImage: files.bannerImage?.[0] ? {
+        originalname: files.bannerImage[0].originalname,
+        mimetype: files.bannerImage[0].mimetype,
+        size: files.bannerImage[0].size,
+        buffer: files.bannerImage[0].buffer?.length,
+        fieldname: files.bannerImage[0].fieldname
+      } : null
+    });
+    
+    const updateStoreDto = JSON.parse(data) as UpdateStoreDto;
+    const ownerId = req.user.ownerId;
+
+    return this.storeService.update(id, ownerId, updateStoreDto, {
+      logoImage: files.logoImage?.[0],
+      bannerImage: files.bannerImage?.[0]
+    });
   }
 
   @ApiOperation({ summary: '상점 삭제' })
@@ -89,7 +147,7 @@ export class StoreController {
     @Request() req,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const ownerId = req.user.id;
+    const ownerId = req.user.ownerId;
     return this.storeService.remove(id, ownerId);
   }
 

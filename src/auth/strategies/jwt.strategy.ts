@@ -79,6 +79,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role,
         sessionId: payload.sessionId,
         isActive: user.isActive,
+        ...(role === 'owner' && {
+          ownerId: user.ownerProfile?.id
+        })
       };
     } catch (error) {
       throw new UnauthorizedException('인증에 실패했습니다');

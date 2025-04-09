@@ -60,7 +60,7 @@ export class OperatingHoursController {
     @Body() createOperatingHourDto: CreateOperatingHourDto,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     return this.operatingHoursService.create(storeId, createOperatingHourDto);
   }
@@ -82,7 +82,7 @@ export class OperatingHoursController {
     @Body() createOperatingHourDtos: CreateOperatingHourDto[],
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     return this.operatingHoursService.createBulk(storeId, createOperatingHourDtos);
   }
@@ -104,7 +104,7 @@ export class OperatingHoursController {
     @Body() updateOperatingHourDto: UpdateOperatingHourDto,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     // 해당 영업시간이 지정된 매장에 소속되어 있는지 확인
     const operatingHour = await this.operatingHoursService.findOne(id);
@@ -132,7 +132,7 @@ export class OperatingHoursController {
     @Body() updateOperatingHourDto: UpdateOperatingHourDto,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     if (!Object.values(DayOfWeek).includes(day)) {
       throw new BadRequestException(`Invalid day: ${day}`);
@@ -156,7 +156,7 @@ export class OperatingHoursController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     // 해당 영업시간이 지정된 매장에 소속되어 있는지 확인
     const operatingHour = await this.operatingHoursService.findOne(id);
@@ -182,7 +182,7 @@ export class OperatingHoursController {
     @Param('day') day: DayOfWeek,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     if (!Object.values(DayOfWeek).includes(day)) {
       throw new BadRequestException(`Invalid day: ${day}`);
@@ -205,7 +205,7 @@ export class OperatingHoursController {
     @Param('storeId', ParseIntPipe) storeId: number,
   ) {
     // 권한 확인: 본인 소유의 매장인지 확인
-    await this.validateStoreOwnership(req.user.id, storeId);
+    await this.validateStoreOwnership(req.user.ownerId, storeId);
     
     return this.operatingHoursService.removeAllByStoreId(storeId);
   }

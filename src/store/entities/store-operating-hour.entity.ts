@@ -31,11 +31,11 @@ export class StoreOperatingHour {
   })
   dayOfWeek: DayOfWeek;
 
-  @Column({ type: 'time', name: 'opening_time' })
-  openingTime: string;
+  @Column({ type: 'time', name: 'opening_time', nullable: true })
+  openingTime: string | null;
 
-  @Column({ type: 'time', name: 'closing_time' })
-  closingTime: string;
+  @Column({ type: 'time', name: 'closing_time', nullable: true })
+  closingTime: string | null;
 
   @Column({ type: 'time', name: 'break_start_time', nullable: true })
   breakStartTime: string;

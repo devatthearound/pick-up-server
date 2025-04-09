@@ -7,7 +7,7 @@ export class Store {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'owner_id' })
+  @Column({ name: 'owner_id', nullable: false })
   ownerId: number;
 
   @ManyToOne(() => OwnerProfile, { onDelete: 'CASCADE' })

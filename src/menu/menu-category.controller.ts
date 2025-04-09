@@ -47,19 +47,21 @@ export class MenuCategoryController {
   }
 
   @Post('store/:storeId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.OWNER)
-  @ApiBearerAuth()
   @ApiOperation({ summary: '메뉴 카테고리 생성' })
   @ApiResponse({ status: 201, description: '메뉴 카테고리가 생성되었습니다.' })
   @ApiResponse({ status: 403, description: '해당 매장에 대한 권한이 없습니다.' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OWNER)
   async create(
     @Param('storeId', ParseIntPipe) storeId: number,
     @Body() createMenuCategoryDto: CreateMenuCategoryDto,
     @Request() req
   ) {
+    const ownerId = req.user.ownerId;
+    console.log("ownerId", ownerId);
     // 매장 소유 확인 로직 추가
-    await this.menuCategoryService.verifyStoreOwnership(storeId, req.user['id']);
+    await this.menuCategoryService.verifyStoreOwnership(storeId, req.user.ownerId);
     return this.menuCategoryService.create(storeId, createMenuCategoryDto);
   }
 
@@ -78,7 +80,7 @@ export class MenuCategoryController {
   ) {
     // 카테고리의 매장 소유 확인
     const category = await this.menuCategoryService.findOne(id);
-    await this.menuCategoryService.verifyStoreOwnership(category.storeId, req.user.id);
+    await this.menuCategoryService.verifyStoreOwnership(category.storeId, req.user.ownerId);
     return this.menuCategoryService.update(id, updateMenuCategoryDto);
   }
 
@@ -96,7 +98,7 @@ export class MenuCategoryController {
   ) {
     // 카테고리의 매장 소유 확인
     const category = await this.menuCategoryService.findOne(id);
-    await this.menuCategoryService.verifyStoreOwnership(category.storeId, req.user.id);
+    await this.menuCategoryService.verifyStoreOwnership(category.storeId, req.user.ownerId);
     return this.menuCategoryService.remove(id);
   }
 }

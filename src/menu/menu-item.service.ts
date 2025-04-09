@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { MenuItem } from './entities/menu-item.entity';
 import { CreateMenuItemDto, UpdateMenuItemDto, MenuItemQueryDto } from './dto/menu-item.dto';
 import { Store } from '../store/entities/store.entity';
+import { Multer } from 'multer';
+import { Express } from 'express';
+import { S3Service } from 'src/common/services/s3.service';
 
 @Injectable()
 export class MenuItemService {
@@ -12,6 +15,7 @@ export class MenuItemService {
     private readonly menuItemRepository: Repository<MenuItem>,
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
+    private readonly s3Service: S3Service,
   ) {}
 
   async findAll(query: MenuItemQueryDto) {
@@ -114,19 +118,52 @@ export class MenuItemService {
     return true;
   }
 
-  async create(storeId: number, dto: CreateMenuItemDto) {
+  async create(storeId: number, dto: CreateMenuItemDto, image: Express.Multer.File) {
+    // 이미지 업로드 처리 (S3 서비스 사용 가정)
+    let imageUrl: string | null = null;
+    if (image) {
+      imageUrl = await this.s3Service.uploadFile(image, 'menu-items');
+    }
+
     const menuItem = this.menuItemRepository.create({
       ...dto,
       storeId,
-    });
+      imageUrl,
+      isAvailable: true,
+      isPopular: dto.isPopular || false,
+      isNew: dto.isNew || false,
+      isRecommended: dto.isRecommended || false,
+      price: Number(dto.price),
+      discountedPrice: dto.discountedPrice ? Number(dto.discountedPrice) : null,
+      preparationTime: dto.preparationTime ? Number(dto.preparationTime) : null,
+      categoryId: dto.categoryId ? Number(dto.categoryId) : null,
+      displayOrder: 0,
+      stockQuantity: null,
+    } as unknown as MenuItem);
 
     return this.menuItemRepository.save(menuItem);
   }
 
-  async update(id: number, dto: UpdateMenuItemDto) {
+  async update(id: number, dto: UpdateMenuItemDto, image: Express.Multer.File) {
     const menuItem = await this.findOne(id);
     
-    Object.assign(menuItem, dto);
+    if (image) {
+      try {
+        const imageUrl = await this.s3Service.uploadFile(image, 'menu-items');
+        dto.imageUrl = imageUrl;
+      } catch (error) {
+        console.error('Image upload failed:', error);
+        throw new Error('이미지 업로드에 실패했습니다.');
+      }
+    }
+
+    Object.assign(menuItem, {
+      ...dto,
+      price: dto.price ? Number(dto.price) : menuItem.price,
+      discountedPrice: dto.discountedPrice ? Number(dto.discountedPrice) : menuItem.discountedPrice,
+      preparationTime: dto.preparationTime ? Number(dto.preparationTime) : menuItem.preparationTime,
+      categoryId: dto.categoryId ? Number(dto.categoryId) : menuItem.categoryId,
+    });
     
     return this.menuItemRepository.save(menuItem);
   }

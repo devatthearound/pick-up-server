@@ -10,6 +10,7 @@ import {
   ValidateIf 
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 
 export class CreateMenuItemDto {
   @ApiProperty({ example: '아메리카노', description: '메뉴 이름' })
@@ -24,12 +25,14 @@ export class CreateMenuItemDto {
 
   @ApiProperty({ example: 4000, description: '메뉴 가격' })
   @IsNotEmpty({ message: '가격은 필수입니다.' })
+  @Type(() => Number)
   @IsNumber()
   @Min(0, { message: '가격은 0 이상이어야 합니다.' })
   price: number;
 
   @ApiProperty({ example: 3500, description: '할인된 가격', required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0, { message: '할인 가격은 0 이상이어야 합니다.' })
   @ValidateIf((o) => o.discountedPrice !== undefined && o.price !== undefined && o.discountedPrice > o.price)
@@ -37,45 +40,43 @@ export class CreateMenuItemDto {
 
   @ApiProperty({ example: 1, description: '메뉴 카테고리 ID', required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   categoryId?: number;
 
-  @ApiProperty({ example: 'coffee.jpg', description: '메뉴 이미지', required: false })
+  @ApiProperty({ 
+    type: 'string', 
+    description: '메뉴 이미지 파일', 
+    required: false,
+    format: 'binary' 
+  })
   @IsOptional()
-  @IsString()
-  imageUrl?: string;
+  image?: any;
 
   @ApiProperty({ example: 5, description: '준비 시간 (분)', required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   preparationTime?: number;
 
-  @ApiProperty({ example: true, description: '판매 가능 여부', required: false })
-  @IsOptional()
-  @IsBoolean()
-  isAvailable?: boolean;
-
   @ApiProperty({ example: true, description: '인기 메뉴 여부', required: false })
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isPopular?: boolean;
 
   @ApiProperty({ example: true, description: '신메뉴 여부', required: false })
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isNew?: boolean;
 
   @ApiProperty({ example: true, description: '추천 메뉴 여부', required: false })
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isRecommended?: boolean;
-
-  @ApiProperty({ example: 50, description: '재고 수량', required: false })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  stockQuantity?: number;
 }
 
 export class UpdateMenuItemDto {
@@ -91,12 +92,14 @@ export class UpdateMenuItemDto {
 
   @ApiProperty({ example: 4500, description: '메뉴 가격', required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0, { message: '가격은 0 이상이어야 합니다.' })
   price?: number;
 
   @ApiProperty({ example: 4000, description: '할인된 가격', required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0, { message: '할인 가격은 0 이상이어야 합니다.' })
   @ValidateIf((o) => o.discountedPrice !== undefined && o.price !== undefined && o.discountedPrice > o.price)
@@ -104,6 +107,7 @@ export class UpdateMenuItemDto {
 
   @ApiProperty({ example: 1, description: '메뉴 카테고리 ID', required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   categoryId?: number;
 
@@ -114,27 +118,32 @@ export class UpdateMenuItemDto {
 
   @ApiProperty({ example: 3, description: '준비 시간 (분)', required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   preparationTime?: number;
 
   @ApiProperty({ example: true, description: '판매 가능 여부', required: false })
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isAvailable?: boolean;
 
   @ApiProperty({ example: true, description: '인기 메뉴 여부', required: false })
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isPopular?: boolean;
 
   @ApiProperty({ example: false, description: '신메뉴 여부', required: false })
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isNew?: boolean;
 
   @ApiProperty({ example: true, description: '추천 메뉴 여부', required: false })
   @IsOptional()
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   isRecommended?: boolean;
 
@@ -143,6 +152,15 @@ export class UpdateMenuItemDto {
   @IsNumber()
   @Min(0)
   stockQuantity?: number;
+
+  @ApiProperty({ 
+    type: 'string', 
+    description: '메뉴 이미지 파일', 
+    required: false,
+    format: 'binary' 
+  })
+  @IsOptional()
+  image?: any;
 }
 
 export class MenuItemQueryDto {

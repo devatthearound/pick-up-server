@@ -10,7 +10,10 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 import * as crypto from 'crypto';
-
+import { OptionModule } from './menu/option.module';
+import { MenuModule } from './menu/menu.module';
+import { MenuAvailabilityModule } from './menu/menu-availability.module';
+import { StoreBenefitModule } from './store/store-benefit.module';
 // crypto 모듈을 전역으로 사용할 수 있도록 설정
 (global as any).crypto = crypto;
 
@@ -31,7 +34,7 @@ import * as crypto from 'crypto';
         password: configService.get('database.password'),
         database: configService.get('database.database'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: process.env.NODE_ENV !== 'production', // 개발 환경에서만 true
+        synchronize: false,
         logging: process.env.NODE_ENV !== 'production',
       }),
       inject: [ConfigService],
@@ -40,6 +43,10 @@ import * as crypto from 'crypto';
     AuthModule,
     StoreModule,
     SchedulerModule,
+    MenuModule,
+    OptionModule,
+    MenuAvailabilityModule,
+    StoreBenefitModule,
   ],
   controllers: [AppController],
   providers: [AppService],
