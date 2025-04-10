@@ -21,9 +21,9 @@ async function bootstrap() {
   // CORS 설정 - 배포된 프론트엔드 주소 명시적 추가
   app.enableCors({
     origin: [
-      frontendUrl,
-      'http://localhost:3000',
-      'http://pickup-rb-1495753177.ap-northeast-2.elb.amazonaws.com', // 배포된 프론트엔드 URL 명시적 추가
+      'https://www.xn--5h5bx6z0e.kr',
+      'https://xn--5h5bx6z0e.kr',
+      'http://localhost:3000'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
