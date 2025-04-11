@@ -15,19 +15,20 @@ async function bootstrap() {
   // 프론트엔드 주소가 환경변수에 제대로 설정되어 있는지 확인
   const frontendUrl = configService.get('FRONTEND_URL');
   console.log('Frontend URL:', frontendUrl); // 디버깅용
-  
-  app.setGlobalPrefix('api');
-  
+    
   // CORS 설정 - 배포된 프론트엔드 주소 명시적 추가
   app.enableCors({
     origin: [
       'https://www.xn--5h5bx6z0e.kr',
       'https://xn--5h5bx6z0e.kr',
+      "https://픽업해.kr",
+      "https://www.픽업해.kr",
       'http://localhost:3000'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Set-Cookie'], // Add this line
   });
   
   // 쿠키 파서 미들웨어 추가
