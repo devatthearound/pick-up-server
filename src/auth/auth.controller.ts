@@ -51,7 +51,8 @@ export class AuthController {
       secure: true,
       sameSite: 'none', // strict에서 none으로 변경
       path: '/', // path 추가
-      maxAge: 15 * 60 * 1000 // 15분
+      maxAge: 15 * 60 * 1000, // 15분
+      domain: '.xn--5h5bx6z0e.kr' // 루트 도메인 설정 (중요)
     });
 
     response.cookie('refresh_token', tokens.refreshToken, {
@@ -59,7 +60,8 @@ export class AuthController {
       secure: true,
       sameSite: 'none', // strict에서 none으로 변경
       path: '/', // path 추가
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+      domain: '.xn--5h5bx6z0e.kr' // 루트 도메인 설정 (중요)
     });
     
     return { message: '토큰이 갱신되었습니다' };
