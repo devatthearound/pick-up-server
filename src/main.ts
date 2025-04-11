@@ -23,6 +23,8 @@ async function bootstrap() {
       'https://xn--5h5bx6z0e.kr',
       "https://픽업해.kr",
       "https://www.픽업해.kr",
+      "https://ezpickup.kr",
+      "https://www.ezpickup.kr",
       'http://localhost:3000'
     ],
     credentials: true,
