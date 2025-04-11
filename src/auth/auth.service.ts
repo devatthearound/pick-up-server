@@ -80,9 +80,6 @@ export class AuthService {
       response.req.ip || ''
     );
 
-    // 쿠키 설정
-    this.setTokenCookies(response, tokens);
-
     return { 
       message: '회원가입이 완료되었습니다.',
       user: {
@@ -92,7 +89,9 @@ export class AuthService {
         profile: registerDto.role === UserRole.CUSTOMER 
           ? user.customerProfile 
           : user.ownerProfile,
-      }
+      },
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
     };
   }
 
@@ -114,36 +113,15 @@ export class AuthService {
     // 사용자 마지막 로그인 시간 업데이트
     await this.usersService.updateLastLogin(user.id);
 
-    this.setTokenCookies(response, tokens);
-    return { user: { id: user.id, email: user.email } };
-  }
-
-  // 쿠키 설정을 위한 헬퍼 메서드
-  private setTokenCookies(response: Response, tokens: { accessToken: string, refreshToken: string }) {
-    response.cookie('access_token', tokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none', // strict에서 none으로 변경
-      path: '/', // path 추가
-      maxAge: 15 * 60 * 1000 // 15분
-    });
-  
-    response.cookie('refresh_token', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none', // strict에서 none으로 변경
-      path: '/', // path 추가
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
-    });
+    return { 
+      user: { id: user.id, email: user.email },
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
+    };
   }
 
   async logout(response: Response, sessionId: number) {
     await this.invalidateSession(sessionId);
-    
-    // 쿠키 제거
-    response.clearCookie('access_token');
-    response.clearCookie('refresh_token');
-    
     return { message: '로그아웃되었습니다.' };
   }
 
@@ -164,10 +142,14 @@ export class AuthService {
   async createTokens(user: User, deviceInfo: any, ipAddress: string) {
     // 사용자 역할 결정
     let role;
+
+    console.log('user:', user);
     if (user.customerProfile) {
       role = UserRole.CUSTOMER;
     } else if (user.ownerProfile) {
       role = UserRole.OWNER;
+    } else {
+      throw new UnauthorizedException('유효하지 않은 사용자 역할입니다');
     }
   
     // 세션 저장
@@ -187,6 +169,7 @@ export class AuthService {
       email: user.email,
       role,
       sessionId: session.id,
+      isActive: user.isActive,
       ...(role === UserRole.OWNER && {
         ownerId: user.ownerProfile?.id
       })
@@ -213,30 +196,43 @@ export class AuthService {
 
   async refreshTokens(refreshToken: string) {
     try {
+      console.log('1. refreshToken:', refreshToken);
+      
       const payload = this.jwtService.verify(refreshToken);
+      console.log('2. Verified payload:', payload);
+      
+      // 세션 조회 시 refreshToken이 아닌 sessionId로 조회
       const session = await this.userSessionRepository.findOne({
-        where: { refreshToken, isValid: true },
-        relations: ['user'],
+        where: { 
+          id: payload.sessionId,
+          isValid: true 
+        },
+        relations: ['user', 'user.customerProfile', 'user.ownerProfile'],
       });
+      console.log('3. Found session:', session);
   
       if (!session) {
-        throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다');
+        console.log('4. Session not found');
+        throw new UnauthorizedException('유효하지 않은 세션입니다');
       }
   
       if (session.expiresAt < new Date()) {
+        console.log('5. Session expired');
         session.isValid = false;
         await this.userSessionRepository.save(session);
-        throw new UnauthorizedException('리프레시 토큰이 만료되었습니다');
+        throw new UnauthorizedException('세션이 만료되었습니다');
       }
   
-      // 사용자 활성 상태 확인 추가
+      // 사용자 활성 상태 확인
       if (!session.user.isActive) {
+        console.log('6. User not active');
         throw new UnauthorizedException('비활성화된 계정입니다');
       }
   
       // 기존 세션 무효화 (토큰 순환을 위해)
       session.isValid = false;
       await this.userSessionRepository.save(session);
+      console.log('7. Session invalidated');
   
       // 새로운 토큰 발급
       const tokens = await this.createTokens(
@@ -244,9 +240,11 @@ export class AuthService {
         session.deviceInfo,
         session.ipAddress,
       );
+      console.log('8. New tokens created');
   
       return tokens;
     } catch (error) {
+      console.log('Error in refreshTokens:', error);
       if (error instanceof UnauthorizedException) {
         throw error;
       }

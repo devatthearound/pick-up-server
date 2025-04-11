@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api": {
+    "/": {
       "get": {
         "operationId": "AppController_getHello",
         "parameters": [],
@@ -15,7 +15,7 @@
         ]
       }
     },
-    "/api/auth/register": {
+    "/auth/register": {
       "post": {
         "operationId": "AuthController_register",
         "parameters": [],
@@ -46,7 +46,7 @@
         ]
       }
     },
-    "/api/auth/login": {
+    "/auth/login": {
       "post": {
         "operationId": "AuthController_login",
         "parameters": [],
@@ -74,7 +74,7 @@
         ]
       }
     },
-    "/api/auth/refresh": {
+    "/auth/refresh": {
       "post": {
         "operationId": "AuthController_refreshTokens",
         "parameters": [],
@@ -92,7 +92,7 @@
         ]
       }
     },
-    "/api/auth/logout": {
+    "/auth/logout": {
       "post": {
         "operationId": "AuthController_logout",
         "parameters": [],
@@ -112,7 +112,7 @@
         ]
       }
     },
-    "/api/auth/me": {
+    "/auth/me": {
       "get": {
         "operationId": "AuthController_getProfile",
         "parameters": [],
@@ -135,7 +135,7 @@
         ]
       }
     },
-    "/api/auth/customer-info": {
+    "/auth/customer-info": {
       "get": {
         "operationId": "AuthController_getCustomerInfo",
         "parameters": [],
@@ -158,7 +158,7 @@
         ]
       }
     },
-    "/api/auth/owner-info": {
+    "/auth/owner-info": {
       "get": {
         "operationId": "AuthController_getOwnerInfo",
         "parameters": [],
@@ -181,7 +181,7 @@
         ]
       }
     },
-    "/api/stores": {
+    "/stores": {
       "get": {
         "operationId": "StoreController_findAll",
         "parameters": [
@@ -317,7 +317,7 @@
         ]
       }
     },
-    "/api/stores/{id}": {
+    "/stores/{id}": {
       "get": {
         "operationId": "StoreController_findOne",
         "parameters": [
@@ -422,7 +422,7 @@
         ]
       }
     },
-    "/api/stores/owner/my-stores": {
+    "/stores/owner/my-stores": {
       "get": {
         "operationId": "StoreController_getMyStores",
         "parameters": [],
@@ -445,7 +445,7 @@
         ]
       }
     },
-    "/api/stores/{id}/verify": {
+    "/stores/{id}/verify": {
       "patch": {
         "operationId": "StoreController_verifyStore",
         "parameters": [
@@ -483,7 +483,7 @@
         ]
       }
     },
-    "/api/store-categories": {
+    "/store-categories": {
       "get": {
         "operationId": "CategoryController_findAll",
         "parameters": [
@@ -541,7 +541,7 @@
         ]
       }
     },
-    "/api/store-categories/{id}": {
+    "/store-categories/{id}": {
       "get": {
         "operationId": "CategoryController_findOne",
         "parameters": [
@@ -650,7 +650,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/operating-hours": {
+    "/stores/{storeId}/operating-hours": {
       "get": {
         "operationId": "OperatingHoursController_findAll",
         "parameters": [
@@ -773,7 +773,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/operating-hours/{day}": {
+    "/stores/{storeId}/operating-hours/{day}": {
       "get": {
         "operationId": "OperatingHoursController_findByDay",
         "parameters": [
@@ -819,7 +819,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/operating-hours/bulk": {
+    "/stores/{storeId}/operating-hours/bulk": {
       "post": {
         "operationId": "OperatingHoursController_createBulk",
         "parameters": [
@@ -876,7 +876,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/operating-hours/{id}": {
+    "/stores/{storeId}/operating-hours/{id}": {
       "patch": {
         "operationId": "OperatingHoursController_update",
         "parameters": [
@@ -979,7 +979,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/operating-hours/day/{day}": {
+    "/stores/{storeId}/operating-hours/day/{day}": {
       "patch": {
         "operationId": "OperatingHoursController_updateByDay",
         "parameters": [
@@ -1082,7 +1082,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/special-days": {
+    "/stores/{storeId}/special-days": {
       "get": {
         "operationId": "SpecialDaysController_findAll",
         "parameters": [
@@ -1228,7 +1228,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/special-days/{id}": {
+    "/stores/{storeId}/special-days/{id}": {
       "get": {
         "operationId": "SpecialDaysController_findOne",
         "parameters": [
@@ -1366,7 +1366,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/special-days/range": {
+    "/stores/{storeId}/special-days/range": {
       "delete": {
         "operationId": "SpecialDaysController_removeByDateRange",
         "parameters": [
@@ -1423,7 +1423,7 @@
         ]
       }
     },
-    "/api/amenities": {
+    "/amenities": {
       "get": {
         "operationId": "AmenityController_findAll",
         "parameters": [],
@@ -1472,7 +1472,7 @@
         ]
       }
     },
-    "/api/amenities/{id}": {
+    "/amenities/{id}": {
       "get": {
         "operationId": "AmenityController_findOne",
         "parameters": [
@@ -1584,7 +1584,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/amenities": {
+    "/stores/{storeId}/amenities": {
       "get": {
         "operationId": "AmenityController_findByStoreId",
         "parameters": [
@@ -1706,7 +1706,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/amenities/add": {
+    "/stores/{storeId}/amenities/add": {
       "patch": {
         "operationId": "AmenityController_addStoreAmenities",
         "parameters": [
@@ -1757,7 +1757,7 @@
         ]
       }
     },
-    "/api/menu-categories": {
+    "/menu-categories": {
       "get": {
         "operationId": "MenuCategoryController_findAll",
         "parameters": [
@@ -1809,7 +1809,7 @@
         ]
       }
     },
-    "/api/menu-categories/{id}": {
+    "/menu-categories/{id}": {
       "get": {
         "operationId": "MenuCategoryController_findOne",
         "parameters": [
@@ -1912,7 +1912,7 @@
         ]
       }
     },
-    "/api/menu-categories/store/{storeId}": {
+    "/menu-categories/store/{storeId}": {
       "get": {
         "operationId": "MenuCategoryController_findByStoreId",
         "parameters": [
@@ -1976,7 +1976,7 @@
         ]
       }
     },
-    "/api/menu-items": {
+    "/menu-items": {
       "get": {
         "operationId": "MenuItemController_findAll",
         "parameters": [
@@ -2064,7 +2064,7 @@
         ]
       }
     },
-    "/api/menu-items/{id}": {
+    "/menu-items/{id}": {
       "get": {
         "operationId": "MenuItemController_findOne",
         "parameters": [
@@ -2167,7 +2167,7 @@
         ]
       }
     },
-    "/api/menu-items/store/{storeId}": {
+    "/menu-items/store/{storeId}": {
       "get": {
         "operationId": "MenuItemController_findByStoreId",
         "parameters": [
@@ -2231,7 +2231,7 @@
         ]
       }
     },
-    "/api/menu-items/category/{categoryId}": {
+    "/menu-items/category/{categoryId}": {
       "get": {
         "operationId": "MenuItemController_findByCategoryId",
         "parameters": [
@@ -2255,7 +2255,7 @@
         ]
       }
     },
-    "/api/menu-items/popular/store/{storeId}": {
+    "/menu-items/popular/store/{storeId}": {
       "get": {
         "operationId": "MenuItemController_findPopularItems",
         "parameters": [
@@ -2287,7 +2287,7 @@
         ]
       }
     },
-    "/api/menu-items/new/store/{storeId}": {
+    "/menu-items/new/store/{storeId}": {
       "get": {
         "operationId": "MenuItemController_findNewItems",
         "parameters": [
@@ -2319,7 +2319,7 @@
         ]
       }
     },
-    "/api/menu-items/recommended/store/{storeId}": {
+    "/menu-items/recommended/store/{storeId}": {
       "get": {
         "operationId": "MenuItemController_findRecommendedItems",
         "parameters": [
@@ -2351,7 +2351,7 @@
         ]
       }
     },
-    "/api/menu-items/{id}/stock": {
+    "/menu-items/{id}/stock": {
       "patch": {
         "operationId": "MenuItemController_updateStock",
         "parameters": [
@@ -2386,7 +2386,7 @@
         ]
       }
     },
-    "/api/options/groups": {
+    "/options/groups": {
       "get": {
         "operationId": "OptionController_findAllOptionGroups",
         "parameters": [
@@ -2440,7 +2440,7 @@
         ]
       }
     },
-    "/api/options/groups/{id}": {
+    "/options/groups/{id}": {
       "get": {
         "operationId": "OptionController_findOptionGroupById",
         "parameters": [
@@ -2543,7 +2543,7 @@
         ]
       }
     },
-    "/api/options/groups/store/{storeId}": {
+    "/options/groups/store/{storeId}": {
       "post": {
         "operationId": "OptionController_createOptionGroup",
         "parameters": [
@@ -2586,7 +2586,7 @@
         ]
       }
     },
-    "/api/options/items/group/{groupId}": {
+    "/options/items/group/{groupId}": {
       "get": {
         "operationId": "OptionController_findOptionItemsByGroupId",
         "parameters": [
@@ -2655,7 +2655,7 @@
         ]
       }
     },
-    "/api/options/items/{id}": {
+    "/options/items/{id}": {
       "post": {
         "operationId": "OptionController_updateOptionItem",
         "parameters": [
@@ -2729,7 +2729,7 @@
         ]
       }
     },
-    "/api/options/menu-option-groups/menu/{menuId}": {
+    "/options/menu-option-groups/menu/{menuId}": {
       "get": {
         "operationId": "OptionController_findMenuOptionGroupsByMenuId",
         "parameters": [
@@ -2757,7 +2757,7 @@
         ]
       }
     },
-    "/api/options/menu-option-groups": {
+    "/options/menu-option-groups": {
       "post": {
         "operationId": "OptionController_createMenuOptionGroup",
         "parameters": [],
@@ -2793,7 +2793,7 @@
         ]
       }
     },
-    "/api/options/menu-option-groups/{id}": {
+    "/options/menu-option-groups/{id}": {
       "post": {
         "operationId": "OptionController_updateMenuOptionGroup",
         "parameters": [
@@ -2867,7 +2867,7 @@
         ]
       }
     },
-    "/api/menu-items/{menuId}/availability": {
+    "/menu-items/{menuId}/availability": {
       "get": {
         "operationId": "MenuAvailabilityController_findByMenuId",
         "parameters": [
@@ -3002,7 +3002,7 @@
         ]
       }
     },
-    "/api/menu-items/availability/{id}": {
+    "/menu-items/availability/{id}": {
       "get": {
         "operationId": "MenuAvailabilityController_findOne",
         "parameters": [
@@ -3108,7 +3108,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/benefits": {
+    "/stores/{storeId}/benefits": {
       "get": {
         "operationId": "StoreBenefitController_findByStoreId",
         "parameters": [
@@ -3232,7 +3232,7 @@
         ]
       }
     },
-    "/api/stores/{storeId}/benefits/ongoing": {
+    "/stores/{storeId}/benefits/ongoing": {
       "get": {
         "operationId": "StoreBenefitController_findOngoingBenefits",
         "parameters": [
@@ -3256,7 +3256,7 @@
         ]
       }
     },
-    "/api/stores/benefits/{id}": {
+    "/stores/benefits/{id}": {
       "get": {
         "operationId": "StoreBenefitController_findOne",
         "parameters": [
@@ -3344,7 +3344,7 @@
         ]
       }
     },
-    "/api/orders": {
+    "/orders": {
       "get": {
         "operationId": "OrderController_findAll",
         "parameters": [
@@ -3547,7 +3547,7 @@
         ]
       }
     },
-    "/api/orders/{id}": {
+    "/orders/{id}": {
       "get": {
         "operationId": "OrderController_findOne",
         "parameters": [
@@ -3579,7 +3579,7 @@
         ]
       }
     },
-    "/api/orders/by-number/{orderNumber}": {
+    "/orders/by-number/{orderNumber}": {
       "get": {
         "operationId": "OrderController_findByOrderNumber",
         "parameters": [
@@ -3611,7 +3611,7 @@
         ]
       }
     },
-    "/api/orders/{id}/status": {
+    "/orders/{id}/status": {
       "patch": {
         "operationId": "OrderController_updateStatus",
         "parameters": [
@@ -3659,7 +3659,7 @@
         ]
       }
     },
-    "/api/orders/{id}/cancel": {
+    "/orders/{id}/cancel": {
       "post": {
         "operationId": "OrderController_cancelOrder",
         "parameters": [
@@ -3697,7 +3697,7 @@
         ]
       }
     },
-    "/api/orders/payment": {
+    "/orders/payment": {
       "post": {
         "operationId": "OrderController_createPayment",
         "parameters": [],
@@ -3733,7 +3733,7 @@
         ]
       }
     },
-    "/api/orders/{id}/payment-status": {
+    "/orders/{id}/payment-status": {
       "patch": {
         "operationId": "OrderController_updatePaymentStatus",
         "parameters": [
@@ -3781,7 +3781,7 @@
         ]
       }
     },
-    "/api/orders/by-phone/{phone}": {
+    "/orders/by-phone/{phone}": {
       "get": {
         "operationId": "OrderController_findByPhone",
         "parameters": [
@@ -3808,7 +3808,7 @@
         ]
       }
     },
-    "/api/orders/by-number-and-phone/{orderNumber}/{phone}": {
+    "/orders/by-number-and-phone/{orderNumber}/{phone}": {
       "get": {
         "operationId": "OrderController_findByOrderNumberAndPhone",
         "parameters": [
@@ -3846,7 +3846,7 @@
         ]
       }
     },
-    "/api/notifications/my": {
+    "/notifications/my": {
       "get": {
         "operationId": "NotificationController_findAllByUser",
         "parameters": [
@@ -3894,7 +3894,7 @@
         ]
       }
     },
-    "/api/notifications/{id}": {
+    "/notifications/{id}": {
       "get": {
         "operationId": "NotificationController_findOne",
         "parameters": [
@@ -3960,7 +3960,7 @@
         ]
       }
     },
-    "/api/notifications/read-all": {
+    "/notifications/read-all": {
       "post": {
         "operationId": "NotificationController_markAllAsRead",
         "parameters": [],
@@ -3980,7 +3980,7 @@
         ]
       }
     },
-    "/api/notifications/unread/count": {
+    "/notifications/unread/count": {
       "get": {
         "operationId": "NotificationController_countUnread",
         "parameters": [],
@@ -4000,7 +4000,7 @@
         ]
       }
     },
-    "/api/notifications": {
+    "/notifications": {
       "post": {
         "operationId": "NotificationController_create",
         "parameters": [],

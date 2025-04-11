@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UseGuards, Get, Request, Headers, Ip, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, UseGuards, Get, Request, Headers, Ip, Req, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -39,32 +39,31 @@ export class AuthController {
   @ApiResponse({ status: 401, description: '인증되지 않은 요청' })
   @Post('refresh')
   async refreshTokens(
-    @Body('refreshToken') refreshToken: string,
+    @Body() body: { refreshToken: string },
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const tokens = await this.authService.refreshTokens(refreshToken);
-    
-    // 새 토큰으로 쿠키 업데이트
-    response.cookie('access_token', tokens.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none', // strict에서 none으로 변경
-      path: '/', // path 추가
-      maxAge: 15 * 60 * 1000, // 15분
-      domain: '.xn--5h5bx6z0e.kr' // 루트 도메인 설정 (중요)
-    });
+    try {
+      console.log('1. Received refresh request:', body);
+      
+      if (!body.refreshToken) {
+        console.log('2. No refresh token provided');
+        throw new UnauthorizedException('리프레시 토큰이 필요합니다');
+      }
 
-    response.cookie('refresh_token', tokens.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none', // strict에서 none으로 변경
-      path: '/', // path 추가
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-      domain: '.xn--5h5bx6z0e.kr' // 루트 도메인 설정 (중요)
-    });
-    
-    return { message: '토큰이 갱신되었습니다' };
+      console.log('3. Calling authService.refreshTokens');
+      const tokens = await this.authService.refreshTokens(body.refreshToken);
+      console.log('4. Tokens created successfully');
+      
+      return { 
+        message: '토큰이 갱신되었습니다',
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken
+      };
+    } catch (error) {
+      console.log('5. Error in refresh endpoint:', error);
+      throw error;
+    }
   }
 
 

@@ -19,12 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => {
-          return request?.cookies?.access_token;
-        },
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ]),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get('jwt.secret'),
     });
@@ -55,14 +50,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('유효하지 않은 세션입니다');
       }
 
-      // 3. 세션 만료 여부 확인
+      // 3. 세션 만료 확인
       if (session.expiresAt < new Date()) {
         session.isValid = false;
         await this.sessionRepository.save(session);
         throw new UnauthorizedException('세션이 만료되었습니다');
       }
 
-      // 4. 역할 결정
+      // 4. 세션 마지막 활동 시간 업데이트
+      session.lastActivityAt = new Date();
+      await this.sessionRepository.save(session);
+
+      // 5. 역할 결정
       let role;
       if (user.customerProfile) {
         role = 'customer';
@@ -72,7 +71,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role = 'unknown';
       }
 
-      // 5. 검증된 사용자 정보 반환
+      // 6. 검증된 사용자 정보 반환 (기존 DTO 형식 유지)
       return { 
         id: payload.sub, 
         email: payload.email,
