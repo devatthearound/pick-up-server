@@ -241,7 +241,7 @@ export class OrderService {
     }
 
     // 주문 아이템 검증 및 가격 계산
-    const validationResult = await this.validateOrderItems(createOrderDto.orderItems);
+    const validationResult = await this.validateOrderItems(createOrderDto.items);
 
     // 주문 번호 생성
     const orderNumber = this.generateOrderNumber();
@@ -264,99 +264,80 @@ export class OrderService {
         totalAmount,
         discountAmount,
         finalAmount,
-        pickupTime: new Date(createOrderDto.pickupTime),
-        customerNote: createOrderDto.customerNote,
+        pickupTime: new Date(), // 현재 시간으로 설정
+        customerNote: '',
         paymentMethod: createOrderDto.paymentMethod,
         status: OrderStatus.PENDING,
         paymentStatus: PaymentStatus.PENDING,
         isGuestOrder: !customerId,
-        customerName: createOrderDto.customerName,
-        customerPhone: createOrderDto.customerPhone,
+        customerName: createOrderDto.guestInfo.name,
+        customerPhone: createOrderDto.guestInfo.phone,
       });
 
       const savedOrder = await queryRunner.manager.save(order);
 
       // 2. 주문 아이템 생성
-      for (const itemDto of createOrderDto.orderItems) {
-        const menuItem = validationResult.menuItems.find(mi => mi.id === itemDto.menuItemId);
-        
+      const orderItems = createOrderDto.items.map((item) => {
+        const menuItem = validationResult.menuItems.find(
+          (m) => m.id === item.menuItemId,
+        );
         if (!menuItem) {
-          throw new BadRequestException(`메뉴 아이템 ID ${itemDto.menuItemId}를 찾을 수 없습니다.`);
+          throw new BadRequestException(
+            `메뉴 아이템을 찾을 수 없습니다: ${item.menuItemId}`,
+          );
         }
-        
-        const orderItem = queryRunner.manager.create(OrderItem, {
+
+        return queryRunner.manager.create(OrderItem, {
           orderId: savedOrder.id,
-          menuItemId: itemDto.menuItemId,
-          quantity: itemDto.quantity,
-          unitPrice: menuItem.price,
-          totalPrice: menuItem.price * itemDto.quantity,
-          specialInstructions: itemDto.specialInstructions,
+          menuItemId: item.menuItemId,
+          quantity: item.quantity,
+          price: menuItem.price,
+          specialInstructions: item.specialInstructions,
         });
+      });
 
-        const savedOrderItem = await queryRunner.manager.save(orderItem);
+      const savedOrderItems = await queryRunner.manager.save(orderItems);
 
-        // 3. 주문 아이템 옵션 생성
-        if (itemDto.options && itemDto.options.length > 0) {
-          for (const optionDto of itemDto.options) {
-            const optionItem = validationResult.optionItems.find(oi => oi.id === optionDto.optionItemId);
-            
-            if (!optionItem) {
-              throw new BadRequestException(`옵션 아이템 ID ${optionDto.optionItemId}를 찾을 수 없습니다.`);
-            }
-            const orderItemOption = queryRunner.manager.create(OrderItemOption, {
-              orderItemId: savedOrderItem.id,
-              optionItemId: optionDto.optionItemId,
-              quantity: optionDto.quantity || 1,
-              price: optionItem.price,
-            });
+      // 3. 주문 아이템 옵션 생성
+      const orderItemOptions = createOrderDto.items.flatMap((item, index) => {
+        if (!item.options?.length) return [];
 
-            await queryRunner.manager.save(orderItemOption);
+        return item.options.map((option) => {
+          const optionItem = validationResult.optionItems.find(
+            (o) => o.id === option.optionItemId,
+          );
+          if (!optionItem) {
+            throw new BadRequestException(
+              `옵션 아이템을 찾을 수 없습니다: ${option.optionItemId}`,
+            );
           }
-        }
+
+          return queryRunner.manager.create(OrderItemOption, {
+            orderItemId: savedOrderItems[index].id,
+            optionItemId: option.optionItemId,
+            quantity: option.quantity || 1,
+            price: optionItem.price,
+          });
+        });
+      });
+
+      if (orderItemOptions.length > 0) {
+        await queryRunner.manager.save(orderItemOptions);
       }
-
-      // 4. 주문 상태 이력 생성
-      const statusHistory = queryRunner.manager.create(OrderStatusHistory, {
-        orderId: savedOrder.id,
-        newStatus: OrderStatus.PENDING,
-        changedAt: new Date()
-      });
-
-      await queryRunner.manager.save(statusHistory);
-
-      // 5. 주문 결제 정보 생성
-      const payment = queryRunner.manager.create(OrderPayment, {
-        orderId: savedOrder.id,
-        amount: finalAmount,
-        paymentMethod: createOrderDto.paymentMethod,
-        paymentStatus: PaymentStatus.PENDING,
-      });
-
-      await queryRunner.manager.save(payment);
 
       await queryRunner.commitTransaction();
 
-      // 6. 알림 생성 및 발송
-      const store = await this.storeRepository.findOne({
-        where: { id: createOrderDto.storeId },
-        relations: ['owner'],
-      });
-      
-      if (store) {
-        await this.notificationService.createOrderNotification(
-          savedOrder.id,
-          store.ownerId,
-          'owner',
-          'new_order',
-          '새로운 주문이 들어왔습니다',
-          `주문번호 ${orderNumber}의 새로운 주문이 접수되었습니다.`
-        );
-      }
-
-      return this.findOne(savedOrder.id);
+      return {
+        orderId: savedOrder.id,
+        orderNumber: savedOrder.orderNumber,
+        totalAmount: savedOrder.totalAmount,
+        finalAmount: savedOrder.finalAmount,
+        status: savedOrder.status,
+        paymentStatus: savedOrder.paymentStatus,
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(`주문 생성 중 오류가 발생했습니다: ${error.message}`);
+      throw error;
     } finally {
       await queryRunner.release();
     }

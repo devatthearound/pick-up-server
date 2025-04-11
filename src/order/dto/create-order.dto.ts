@@ -48,43 +48,37 @@ export class OrderItemDto {
   options?: OrderItemOptionDto[];
 }
 
+export class GuestInfoDto {
+  @ApiProperty({ example: '홍길동', description: '비회원 주문 시 고객 이름' })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ example: '010-1234-5678', description: '비회원 주문 시 고객 전화번호' })
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
+}
+
 export class CreateOrderDto {
   @ApiProperty({ example: 1, description: '매장 ID' })
   @IsNumber()
   @IsNotEmpty()
   storeId: number;
 
-  @ApiProperty({ example: 1, description: '회원 ID (선택)', required: false })
-  @IsOptional()
-  @IsNumber()
-  customerId?: number;
-
   @ApiProperty({ type: [OrderItemDto], description: '주문 아이템 목록' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
-  orderItems: OrderItemDto[];
+  items: OrderItemDto[];
 
-  @ApiProperty({ example: '2025-04-10T14:30:00Z', description: '픽업 예정 시간' })
-  @IsDateString()
-  pickupTime: string;
-
-  @ApiProperty({ enum: PaymentMethod, description: '결제 방법', example: PaymentMethod.CREDIT_CARD })
+  @ApiProperty({ example: 'CASH', description: '결제 방법', enum: PaymentMethod })
   @IsEnum(PaymentMethod)
+  @IsNotEmpty()
   paymentMethod: PaymentMethod;
 
-  @ApiProperty({ example: '알레르기가 있으니 주의해 주세요', description: '고객 요청사항', required: false })
-  @IsOptional()
-  @IsString()
-  customerNote?: string;
-
-  @ApiProperty({ example: '홍길동', description: '고객 이름 (비회원 필수)', required: false })
-  @IsOptional()
-  @IsString()
-  customerName?: string;
-
-  @ApiProperty({ example: '010-1234-5678', description: '고객 전화번호 (비회원 필수)', required: false })
-  @IsOptional()
-  @IsString()
-  customerPhone?: string;
+  @ApiProperty({ type: GuestInfoDto, description: '비회원 주문 시 고객 정보' })
+  @ValidateNested()
+  @Type(() => GuestInfoDto)
+  guestInfo: GuestInfoDto;
 }

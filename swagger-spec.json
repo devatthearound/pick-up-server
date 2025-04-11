@@ -4892,6 +4892,25 @@
           "quantity"
         ]
       },
+      "GuestInfoDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "비회원 주문 시 고객 이름"
+          },
+          "phone": {
+            "type": "string",
+            "example": "010-1234-5678",
+            "description": "비회원 주문 시 고객 전화번호"
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
       "CreateOrderDto": {
         "type": "object",
         "properties": {
@@ -4900,25 +4919,17 @@
             "example": 1,
             "description": "매장 ID"
           },
-          "customerId": {
-            "type": "number",
-            "example": 1,
-            "description": "회원 ID (선택)"
-          },
-          "orderItems": {
+          "items": {
             "description": "주문 아이템 목록",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/OrderItemDto"
             }
           },
-          "pickupTime": {
-            "type": "string",
-            "example": "2025-04-10T14:30:00Z",
-            "description": "픽업 예정 시간"
-          },
           "paymentMethod": {
             "type": "string",
+            "example": "CASH",
+            "description": "결제 방법",
             "enum": [
               "credit_card",
               "bank_transfer",
@@ -4926,31 +4937,22 @@
               "point",
               "cash",
               "other"
-            ],
-            "description": "결제 방법",
-            "example": "credit_card"
+            ]
           },
-          "customerNote": {
-            "type": "string",
-            "example": "알레르기가 있으니 주의해 주세요",
-            "description": "고객 요청사항"
-          },
-          "customerName": {
-            "type": "string",
-            "example": "홍길동",
-            "description": "고객 이름 (비회원 필수)"
-          },
-          "customerPhone": {
-            "type": "string",
-            "example": "010-1234-5678",
-            "description": "고객 전화번호 (비회원 필수)"
+          "guestInfo": {
+            "description": "비회원 주문 시 고객 정보",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GuestInfoDto"
+              }
+            ]
           }
         },
         "required": [
           "storeId",
-          "orderItems",
-          "pickupTime",
-          "paymentMethod"
+          "items",
+          "paymentMethod",
+          "guestInfo"
         ]
       },
       "UpdateOrderStatusDto": {

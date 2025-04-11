@@ -103,15 +103,15 @@ import {
     @ApiResponse({ status: 400, description: '잘못된 요청' })
     @Post()
     async create(@Body() createOrderDto: CreateOrderDto) {
-      // 회원 주문인 경우 customerId 사용
-      if (createOrderDto.customerId) {
-        return this.orderService.create(createOrderDto.customerId, createOrderDto);
-      }
+      // // 회원 주문인 경우 customerId 사용
+      // if (createOrderDto.customerId) {
+      //   return this.orderService.create(createOrderDto.customerId, createOrderDto);
+      // }
       
-      // 비회원 주문인 경우 customerPhone과 customerName 사용
-      if (!createOrderDto.customerPhone || !createOrderDto.customerName) {
-        throw new BadRequestException('비회원 주문의 경우 고객 이름과 전화번호가 필요합니다.');
-      }
+      // // 비회원 주문인 경우 customerPhone과 customerName 사용
+      // if (!createOrderDto.customerPhone || !createOrderDto.customerName) {
+      //   throw new BadRequestException('비회원 주문의 경우 고객 이름과 전화번호가 필요합니다.');
+      // }
       
       return this.orderService.create(null, createOrderDto);
     }
