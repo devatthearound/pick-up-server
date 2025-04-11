@@ -291,7 +291,8 @@ export class OrderService {
           orderId: savedOrder.id,
           menuItemId: item.menuItemId,
           quantity: item.quantity,
-          price: menuItem.price,
+          unitPrice: menuItem.price,
+          totalPrice: menuItem.price * item.quantity,
           specialInstructions: item.specialInstructions,
         });
       });
