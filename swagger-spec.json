@@ -3536,11 +3536,6 @@
             "description": "잘못된 요청"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "주문 생성",
         "tags": [
           "주문"
@@ -4905,6 +4900,11 @@
             "example": 1,
             "description": "매장 ID"
           },
+          "customerId": {
+            "type": "number",
+            "example": 1,
+            "description": "회원 ID (선택)"
+          },
           "orderItems": {
             "description": "주문 아이템 목록",
             "type": "array",
@@ -4934,6 +4934,16 @@
             "type": "string",
             "example": "알레르기가 있으니 주의해 주세요",
             "description": "고객 요청사항"
+          },
+          "customerName": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "고객 이름 (비회원 필수)"
+          },
+          "customerPhone": {
+            "type": "string",
+            "example": "010-1234-5678",
+            "description": "고객 전화번호 (비회원 필수)"
           }
         },
         "required": [

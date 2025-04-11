@@ -230,7 +230,7 @@ export class OrderService {
     return order;
   }
 
-  async create(customerId: number, createOrderDto: CreateOrderDto) {
+  async create(customerId: number | null, createOrderDto: CreateOrderDto) {
     // 매장 운영 상태 확인
     const storeStatus = await this.storeOperationStatusRepository.findOne({
       where: { storeId: createOrderDto.storeId },
@@ -259,7 +259,7 @@ export class OrderService {
       // 1. 주문 생성
       const order = queryRunner.manager.create(Order, {
         orderNumber,
-        customerId,
+        customerId: customerId || undefined,
         storeId: createOrderDto.storeId,
         totalAmount,
         discountAmount,

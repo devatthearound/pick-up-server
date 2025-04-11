@@ -54,6 +54,11 @@ export class CreateOrderDto {
   @IsNotEmpty()
   storeId: number;
 
+  @ApiProperty({ example: 1, description: '회원 ID (선택)', required: false })
+  @IsOptional()
+  @IsNumber()
+  customerId?: number;
+
   @ApiProperty({ type: [OrderItemDto], description: '주문 아이템 목록' })
   @IsArray()
   @ValidateNested({ each: true })
@@ -73,10 +78,12 @@ export class CreateOrderDto {
   @IsString()
   customerNote?: string;
 
+  @ApiProperty({ example: '홍길동', description: '고객 이름 (비회원 필수)', required: false })
   @IsOptional()
   @IsString()
   customerName?: string;
 
+  @ApiProperty({ example: '010-1234-5678', description: '고객 전화번호 (비회원 필수)', required: false })
   @IsOptional()
   @IsString()
   customerPhone?: string;
