@@ -4024,6 +4024,150 @@
           "주문 알림"
         ]
       }
+    },
+    "/notification/tokens": {
+      "get": {
+        "description": "사용자의 FCM 토큰을 조회합니다.",
+        "operationId": "NotificationController_getTokens",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "토큰 목록이 성공적으로 조회되었습니다."
+          },
+          "401": {
+            "description": "인증되지 않은 요청입니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "FCM 토큰 조회",
+        "tags": [
+          "알림"
+        ]
+      }
+    },
+    "/notification/register-token": {
+      "post": {
+        "description": "사용자의 FCM 토큰을 등록합니다.",
+        "operationId": "NotificationController_registerToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterFcmTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "토큰이 성공적으로 등록되었습니다."
+          },
+          "400": {
+            "description": "잘못된 요청입니다."
+          },
+          "401": {
+            "description": "인증되지 않은 요청입니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "FCM 토큰 등록",
+        "tags": [
+          "알림"
+        ]
+      }
+    },
+    "/notification/send": {
+      "post": {
+        "description": "특정 사용자에게 푸시 알림을 전송합니다.",
+        "operationId": "NotificationController_sendNotification",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "알림이 성공적으로 전송되었습니다."
+          },
+          "400": {
+            "description": "잘못된 요청입니다."
+          },
+          "401": {
+            "description": "인증되지 않은 요청입니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "푸시 알림 전송",
+        "tags": [
+          "알림"
+        ]
+      }
+    },
+    "/notification/unregister-token": {
+      "delete": {
+        "description": "사용자의 FCM 토큰을 삭제합니다.",
+        "operationId": "NotificationController_unregisterToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnregisterTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "토큰이 성공적으로 삭제되었습니다."
+          },
+          "400": {
+            "description": "잘못된 요청입니다."
+          },
+          "401": {
+            "description": "인증되지 않은 요청입니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "FCM 토큰 삭제",
+        "tags": [
+          "알림"
+        ]
+      }
     }
   },
   "info": {
@@ -5119,6 +5263,82 @@
           "type",
           "title",
           "message"
+        ]
+      },
+      "RegisterFcmTokenDto": {
+        "type": "object",
+        "properties": {
+          "fcmToken": {
+            "type": "string",
+            "description": "FCM 토큰",
+            "example": "fcm_token_string"
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "기기 타입",
+            "enum": [
+              "IOS",
+              "ANDROID",
+              "WEB"
+            ],
+            "example": "IOS"
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "기기 식별자",
+            "example": "device_identifier"
+          }
+        },
+        "required": [
+          "fcmToken",
+          "deviceType",
+          "deviceId"
+        ]
+      },
+      "SendNotificationDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "number",
+            "description": "사용자 ID",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "description": "알림 제목",
+            "example": "새로운 메시지"
+          },
+          "body": {
+            "type": "string",
+            "description": "알림 내용",
+            "example": "새로운 메시지가 도착했습니다."
+          },
+          "data": {
+            "type": "object",
+            "description": "추가 데이터",
+            "example": {
+              "messageId": "123",
+              "type": "MESSAGE"
+            }
+          }
+        },
+        "required": [
+          "userId",
+          "title",
+          "body"
+        ]
+      },
+      "UnregisterTokenDto": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "description": "기기 식별자",
+            "example": "device_identifier"
+          }
+        },
+        "required": [
+          "deviceId"
         ]
       }
     }

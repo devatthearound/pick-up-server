@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { CustomerProfile } from './customer-profile.entity';
 import { OwnerProfile } from './owner-profile.entity';
 import { UserSession } from '../../session/entities/user-session.entity';
-
+import { UserFcmToken } from '../../notification/entities/user-fcm-token.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -40,4 +40,7 @@ export class User {
 
   @OneToMany(() => UserSession, (session) => session.user)
   sessions: UserSession[];
+
+  @OneToMany(() => UserFcmToken, (token) => token.user)
+  fcmTokens: UserFcmToken[];
 }

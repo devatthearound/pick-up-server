@@ -14,6 +14,7 @@ import { MenuItem } from '../menu/entities/menu-item.entity';
 import { OptionItem } from '../menu/entities/option_items.entity';
 import { Store } from '../store/entities/store.entity';
 import { StoreOperationStatus } from '../store/entities/store-operation-status.entity';
+import { FirebaseMessagingModule } from '../notification/firebase-messaging.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { StoreOperationStatus } from '../store/entities/store-operation-status.e
       Store,
       StoreOperationStatus,
     ]),
+    FirebaseMessagingModule,
   ],
   controllers: [OrderController, NotificationController],
   providers: [OrderService, NotificationService],

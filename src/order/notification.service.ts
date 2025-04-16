@@ -6,6 +6,7 @@ import { OrderStatus } from './entities/order.entity';
 import { RecipientType } from './entities/order-notification.entity';
 import { NotificationQueryDto, UpdateNotificationDto, CreateNotificationDto } from './dto/notification.dto';
 import { Order } from './entities/order.entity';
+import { FirebaseMessagingService } from '../notification/firebase-messaging.service';
 
 interface NotificationData {
   orderId: number;
@@ -23,6 +24,7 @@ export class NotificationService {
     private notificationRepository: Repository<OrderNotification>,
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
+    private firebaseMessagingService: FirebaseMessagingService,
   ) {}
 
   async findAllByRecipient(recipientId: number, recipientType: RecipientType, queryDto: NotificationQueryDto) {
@@ -84,6 +86,20 @@ export class NotificationService {
     return this.notificationRepository.save(notification);
   }
 
+  async sendPushNotification(recipientId: number, title: string, message: string, data?: any) {
+    try {
+      return await this.firebaseMessagingService.sendNotification(
+        recipientId,
+        title,
+        message,
+        data,
+      );
+    } catch (error) {
+      console.error('Error in sendPushNotification:', error);
+      throw error;
+    }
+  }
+
   async createOrderNotification(
     orderId: number,
     recipientId: number,
@@ -103,7 +119,16 @@ export class NotificationService {
       sentAt: new Date(),
     });
 
-    return this.notificationRepository.save(notification);
+    const savedNotification = await this.notificationRepository.save(notification);
+
+    // 푸시 알림 전송
+    await this.sendPushNotification(recipientId, title, message, {
+      notificationId: savedNotification.id,
+      orderId,
+      type,
+    });
+
+    return savedNotification;
   }
 
   async createOrderStatusNotification(orderId: number, status: OrderStatus) {
@@ -219,14 +244,26 @@ export class NotificationService {
         break;
     }
 
-    // 알림 생성
+    // 알림 생성 및 푸시 알림 전송
     for (const notificationData of notifications) {
       const notification = this.notificationRepository.create({
         ...notificationData,
         isRead: false,
         sentAt: new Date(),
       });
-      await this.notificationRepository.save(notification);
+      const savedNotification = await this.notificationRepository.save(notification);
+
+      // 푸시 알림 전송
+      await this.sendPushNotification(
+        notificationData.recipientId,
+        notificationData.title,
+        notificationData.message,
+        {
+          notificationId: savedNotification.id,
+          orderId,
+          type: notificationData.type,
+        },
+      );
     }
 
     return notifications.length;

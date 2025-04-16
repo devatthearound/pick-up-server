@@ -33,6 +33,29 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_users_timestamp BEFORE UPDATE
 ON users FOR EACH ROW EXECUTE PROCEDURE update_timestamp_column();
 
+
+CREATE TABLE user_fcm_tokens (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  fcm_token VARCHAR(255) NOT NULL,
+  device_type VARCHAR(50), -- 'android', 'ios' 등
+  device_id VARCHAR(255), -- 기기 고유 식별자
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_user_fcm_tokens_user_id ON user_fcm_tokens(user_id);
+CREATE INDEX idx_user_fcm_tokens_token ON user_fcm_tokens(fcm_token);
+CREATE INDEX idx_user_fcm_tokens_is_active ON user_fcm_tokens(is_active);
+
+-- 업데이트 트리거 추가
+CREATE TRIGGER update_user_fcm_tokens_timestamp BEFORE UPDATE
+ON user_fcm_tokens FOR EACH ROW EXECUTE PROCEDURE update_timestamp_column();
+
+
+
 -- 고객 프로필
 CREATE TABLE customer_profiles (
   id SERIAL PRIMARY KEY,

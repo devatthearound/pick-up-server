@@ -15,6 +15,7 @@ import { MenuModule } from './menu/menu.module';
 import { MenuAvailabilityModule } from './menu/menu-availability.module';
 import { StoreBenefitModule } from './store/store-benefit.module';
 import { OrderModule } from './order/order.module';
+import { NotificationModule } from './notification/notification.module';
 // crypto 모듈을 전역으로 사용할 수 있도록 설정
 (global as any).crypto = crypto;
 
@@ -49,6 +50,7 @@ import { OrderModule } from './order/order.module';
     MenuAvailabilityModule,
     StoreBenefitModule,
     OrderModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
