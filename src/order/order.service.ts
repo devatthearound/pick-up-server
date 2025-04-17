@@ -41,7 +41,7 @@ export class OrderService {
     private storeOperationStatusRepository: Repository<StoreOperationStatus>,
     private connection: Connection,
     private notificationService: NotificationService,
-    private kakaoTalkService: KakaoTalkService,
+    private kakaoTalkService: KakaoTalkService
   ) {}
 
   async findAll(queryDto: OrderQueryDto) {
@@ -238,24 +238,26 @@ export class OrderService {
   }
 
   async create(customerId: number | null, createOrderDto: CreateOrderDto) {
+     // 매장 정보 조회
+    const store = await this.storeRepository.findOne({
+      where: { domain: createOrderDto.storeDomain },
+      relations: ['owner', 'owner.user'],
+    });
+
+     
+    if (!store) {
+      throw new NotFoundException('매장을 찾을 수 없습니다.');
+    }
+
     // 매장 운영 상태 확인
     const storeStatus = await this.storeOperationStatusRepository.findOne({
-      where: { storeId: createOrderDto.storeId },
+      where: { storeId: store.id },
     });
 
     if (!storeStatus || !storeStatus.isAcceptingOrders) {
       throw new BadRequestException('현재 매장에서 주문을 받지 않고 있습니다.');
     }
 
-    // 매장 정보 조회
-    const store = await this.storeRepository.findOne({
-      where: { id: createOrderDto.storeId },
-      relations: ['owner', 'owner.user'],
-    });
-
-    if (!store) {
-      throw new NotFoundException('매장을 찾을 수 없습니다.');
-    }
 
     // 주문 아이템 검증 및 가격 계산
     const validationResult = await this.validateOrderItems(createOrderDto.items);
@@ -277,7 +279,7 @@ export class OrderService {
       const order = queryRunner.manager.create(Order, {
         orderNumber,
         customerId: customerId || undefined,
-        storeId: createOrderDto.storeId,
+        storeId: store.id,
         totalAmount,
         discountAmount,
         finalAmount,

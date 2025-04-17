@@ -61,10 +61,15 @@ export class GuestInfoDto {
 }
 
 export class CreateOrderDto {
-  @ApiProperty({ example: 1, description: '매장 ID' })
-  @IsNumber()
+  // @ApiProperty({ example: 1, description: '매장 ID' })
+  // @IsNumber()
+  // @IsNotEmpty()
+  // storeId: number;
+
+  @ApiProperty({ example: 'store.domain.com', description: '매장 도메인' })
+  @IsString()
   @IsNotEmpty()
-  storeId: number;
+  storeDomain: string;
 
   @ApiProperty({ type: [OrderItemDto], description: '주문 아이템 목록' })
   @IsArray()

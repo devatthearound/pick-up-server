@@ -86,6 +86,19 @@ export class StoreService {
     return store;
   }
 
+  async findOneByDomain(domain: string) {
+    const store = await this.storeRepository.findOne({
+      where: { domain },
+      relations: ['owner'],
+    });
+    
+    if (!store) {
+      throw new NotFoundException(`상점 도메인 ${domain}을 찾을 수 없습니다.`);
+    }
+    
+    return store;
+  }
+  
   async findByBusinessRegistrationNumber(businessRegistrationNumber: string) {
     return this.storeRepository.findOne({
       where: { businessRegistrationNumber },

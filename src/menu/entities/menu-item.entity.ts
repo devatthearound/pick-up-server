@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Store } from '../../store/entities/store.entity';
 import { MenuCategory } from './menu-category.entity';
+import { MenuItemCategory } from './menu-item-category.entity';
 
 @Entity('menu_items')
 export class MenuItem {
@@ -14,12 +15,8 @@ export class MenuItem {
   @JoinColumn({ name: 'store_id' })
   store: Store;
 
-  @Column({ name: 'category_id', nullable: true })
-  categoryId: number;
-
-  @ManyToOne(() => MenuCategory, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'category_id' })
-  category: MenuCategory;
+  @OneToMany(() => MenuItemCategory, menuItemCategory => menuItemCategory.menuItem)
+  menuItemCategories: MenuItemCategory[];
 
   @Column({ length: 100 })
   name: string;
@@ -54,13 +51,10 @@ export class MenuItem {
   @Column({ nullable: true, name: 'stock_quantity', type: 'int' })
   stockQuantity: number;
 
-  @Column({ default: 0, name: 'display_order' })
-  displayOrder: number;
-
   @Column({ default: false, name: 'is_deleted' })
   isDeleted: boolean;
 
-  @Column({ default: false, name: 'deleted_at' })
+  @Column({ nullable: true, name: 'deleted_at' })
   deletedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })

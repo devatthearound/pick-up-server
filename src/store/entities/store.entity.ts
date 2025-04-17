@@ -17,6 +17,9 @@ export class Store {
   @Column({ length: 100 })
   name: string;
 
+  @Column({ length: 100, unique: true })
+  domain: string;
+
   @Column({ length: 100, nullable: true, name: 'english_name' })
   englishName: string;
 

@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Store } from '../../store/entities/store.entity';
-import { MenuItem } from './menu-item.entity';
+import { MenuItemCategory } from './menu-item-category.entity';
 
 @Entity('menu_categories')
 export class MenuCategory {
@@ -32,6 +32,6 @@ export class MenuCategory {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => MenuItem, menuItem => menuItem.category)
-  menuItems: MenuItem[];
+  @OneToMany(() => MenuItemCategory, menuItemCategory => menuItemCategory.category)
+  menuItemCategories: MenuItemCategory[];
 }

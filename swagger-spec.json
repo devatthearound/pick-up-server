@@ -326,7 +326,15 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "number"
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -1757,225 +1765,6 @@
         ]
       }
     },
-    "/menu-categories": {
-      "get": {
-        "operationId": "MenuCategoryController_findAll",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "페이지 번호",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "페이지당 항목 수",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "isActive",
-            "required": false,
-            "in": "query",
-            "description": "활성 상태로 필터링",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "storeId",
-            "required": false,
-            "in": "query",
-            "description": "매장 ID로 필터링",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "메뉴 카테고리 목록을 반환합니다."
-          }
-        },
-        "summary": "메뉴 카테고리 목록 조회",
-        "tags": [
-          "메뉴 카테고리"
-        ]
-      }
-    },
-    "/menu-categories/{id}": {
-      "get": {
-        "operationId": "MenuCategoryController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "메뉴 카테고리 상세 정보를 반환합니다."
-          },
-          "404": {
-            "description": "메뉴 카테고리를 찾을 수 없습니다."
-          }
-        },
-        "summary": "메뉴 카테고리 상세 조회",
-        "tags": [
-          "메뉴 카테고리"
-        ]
-      },
-      "patch": {
-        "operationId": "MenuCategoryController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateMenuCategoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "메뉴 카테고리가 수정되었습니다."
-          },
-          "403": {
-            "description": "해당 카테고리에 대한 권한이 없습니다."
-          },
-          "404": {
-            "description": "메뉴 카테고리를 찾을 수 없습니다."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "메뉴 카테고리 수정",
-        "tags": [
-          "메뉴 카테고리"
-        ]
-      },
-      "delete": {
-        "operationId": "MenuCategoryController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "메뉴 카테고리가 삭제되었습니다."
-          },
-          "403": {
-            "description": "해당 카테고리에 대한 권한이 없습니다."
-          },
-          "404": {
-            "description": "메뉴 카테고리를 찾을 수 없습니다."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "메뉴 카테고리 삭제",
-        "tags": [
-          "메뉴 카테고리"
-        ]
-      }
-    },
-    "/menu-categories/store/{storeId}": {
-      "get": {
-        "operationId": "MenuCategoryController_findByStoreId",
-        "parameters": [
-          {
-            "name": "storeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "매장별 메뉴 카테고리 목록을 반환합니다."
-          }
-        },
-        "summary": "매장별 메뉴 카테고리 조회",
-        "tags": [
-          "메뉴 카테고리"
-        ]
-      },
-      "post": {
-        "operationId": "MenuCategoryController_create",
-        "parameters": [
-          {
-            "name": "storeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMenuCategoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "메뉴 카테고리가 생성되었습니다."
-          },
-          "403": {
-            "description": "해당 매장에 대한 권한이 없습니다."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "메뉴 카테고리 생성",
-        "tags": [
-          "메뉴 카테고리"
-        ]
-      }
-    },
     "/menu-items": {
       "get": {
         "operationId": "MenuItemController_findAll",
@@ -2172,11 +1961,11 @@
         "operationId": "MenuItemController_findByStoreId",
         "parameters": [
           {
-            "name": "storeId",
+            "name": "type",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
@@ -2383,6 +2172,481 @@
         "summary": "메뉴 아이템 재고 수정",
         "tags": [
           "메뉴 아이템"
+        ]
+      }
+    },
+    "/menu-categories": {
+      "get": {
+        "operationId": "MenuCategoryController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "description": "활성 상태로 필터링",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "storeId",
+            "required": false,
+            "in": "query",
+            "description": "매장 ID로 필터링",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "메뉴 카테고리 목록을 반환합니다."
+          }
+        },
+        "summary": "메뉴 카테고리 목록 조회",
+        "tags": [
+          "메뉴 카테고리"
+        ]
+      }
+    },
+    "/menu-categories/{id}": {
+      "get": {
+        "operationId": "MenuCategoryController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "메뉴 카테고리 상세 정보를 반환합니다."
+          },
+          "404": {
+            "description": "메뉴 카테고리를 찾을 수 없습니다."
+          }
+        },
+        "summary": "메뉴 카테고리 상세 조회",
+        "tags": [
+          "메뉴 카테고리"
+        ]
+      },
+      "patch": {
+        "operationId": "MenuCategoryController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMenuCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "메뉴 카테고리가 수정되었습니다."
+          },
+          "403": {
+            "description": "해당 카테고리에 대한 권한이 없습니다."
+          },
+          "404": {
+            "description": "메뉴 카테고리를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "메뉴 카테고리 수정",
+        "tags": [
+          "메뉴 카테고리"
+        ]
+      },
+      "delete": {
+        "operationId": "MenuCategoryController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "메뉴 카테고리가 삭제되었습니다."
+          },
+          "403": {
+            "description": "해당 카테고리에 대한 권한이 없습니다."
+          },
+          "404": {
+            "description": "메뉴 카테고리를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "메뉴 카테고리 삭제",
+        "tags": [
+          "메뉴 카테고리"
+        ]
+      }
+    },
+    "/menu-categories/store/{storeId}": {
+      "get": {
+        "operationId": "MenuCategoryController_findByStoreId",
+        "parameters": [
+          {
+            "name": "storeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "매장별 메뉴 카테고리 목록을 반환합니다."
+          }
+        },
+        "summary": "매장별 메뉴 카테고리 조회",
+        "tags": [
+          "메뉴 카테고리"
+        ]
+      },
+      "post": {
+        "operationId": "MenuCategoryController_create",
+        "parameters": [
+          {
+            "name": "storeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMenuCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "메뉴 카테고리가 생성되었습니다."
+          },
+          "403": {
+            "description": "해당 매장에 대한 권한이 없습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "메뉴 카테고리 생성",
+        "tags": [
+          "메뉴 카테고리"
+        ]
+      }
+    },
+    "/menu-item-categories/{storeId}": {
+      "get": {
+        "operationId": "MenuItemCategoryController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "storeId",
+            "required": false,
+            "in": "query",
+            "description": "매장 ID로 필터링",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "menuItemId",
+            "required": false,
+            "in": "query",
+            "description": "메뉴 아이템 ID로 필터링",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "description": "카테고리 ID로 필터링",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "타입으로 필터링",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "메뉴 아이템-카테고리 관계 목록을 반환합니다."
+          }
+        },
+        "summary": "메뉴 아이템-카테고리 관계 목록 조회",
+        "tags": [
+          "메뉴 아이템-카테고리 관계"
+        ]
+      }
+    },
+    "/menu-item-categories/{id}": {
+      "get": {
+        "operationId": "MenuItemCategoryController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "메뉴 아이템-카테고리 관계 상세 정보를 반환합니다."
+          },
+          "404": {
+            "description": "메뉴 아이템-카테고리 관계를 찾을 수 없습니다."
+          }
+        },
+        "summary": "메뉴 아이템-카테고리 관계 상세 조회",
+        "tags": [
+          "메뉴 아이템-카테고리 관계"
+        ]
+      },
+      "patch": {
+        "operationId": "MenuItemCategoryController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMenuItemCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "메뉴 아이템-카테고리 관계가 수정되었습니다."
+          },
+          "404": {
+            "description": "메뉴 아이템-카테고리 관계를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "메뉴 아이템-카테고리 관계 수정",
+        "tags": [
+          "메뉴 아이템-카테고리 관계"
+        ]
+      },
+      "delete": {
+        "operationId": "MenuItemCategoryController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "메뉴 아이템-카테고리 관계가 삭제되었습니다."
+          },
+          "404": {
+            "description": "메뉴 아이템-카테고리 관계를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "메뉴 아이템-카테고리 관계 삭제",
+        "tags": [
+          "메뉴 아이템-카테고리 관계"
+        ]
+      }
+    },
+    "/menu-item-categories/menu-item/{menuItemId}": {
+      "get": {
+        "operationId": "MenuItemCategoryController_findByMenuItemId",
+        "parameters": [
+          {
+            "name": "menuItemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "메뉴 아이템별 카테고리 목록을 반환합니다."
+          }
+        },
+        "summary": "메뉴 아이템별 카테고리 목록 조회",
+        "tags": [
+          "메뉴 아이템-카테고리 관계"
+        ]
+      }
+    },
+    "/menu-item-categories/category/{categoryId}": {
+      "get": {
+        "operationId": "MenuItemCategoryController_findByCategoryId",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "카테고리별 메뉴 아이템 목록을 반환합니다."
+          }
+        },
+        "summary": "조회카테고리별 메뉴 아이템 목록 ",
+        "tags": [
+          "메뉴 아이템-카테고리 관계"
+        ]
+      }
+    },
+    "/menu-item-categories": {
+      "post": {
+        "operationId": "MenuItemCategoryController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMenuItemCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "메뉴 아이템-카테고리 관계가 생성되었습니다."
+          },
+          "400": {
+            "description": "잘못된 요청입니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "메뉴 아이템-카테고리 관계 생성",
+        "tags": [
+          "메뉴 아이템-카테고리 관계"
         ]
       }
     },
@@ -4526,59 +4790,6 @@
           "amenityIds"
         ]
       },
-      "CreateMenuCategoryDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "커피",
-            "description": "메뉴 카테고리 이름"
-          },
-          "description": {
-            "type": "string",
-            "example": "다양한 커피 음료",
-            "description": "카테고리 설명"
-          },
-          "displayOrder": {
-            "type": "number",
-            "example": 1,
-            "description": "카테고리 표시 순서"
-          },
-          "isActive": {
-            "type": "boolean",
-            "example": true,
-            "description": "카테고리 활성 상태"
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "UpdateMenuCategoryDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "에스프레소",
-            "description": "메뉴 카테고리 이름"
-          },
-          "description": {
-            "type": "string",
-            "example": "진한 에스프레소 기반 음료",
-            "description": "카테고리 설명"
-          },
-          "displayOrder": {
-            "type": "number",
-            "example": 2,
-            "description": "카테고리 표시 순서"
-          },
-          "isActive": {
-            "type": "boolean",
-            "example": false,
-            "description": "카테고리 활성 상태"
-          }
-        }
-      },
       "CreateMenuItemDto": {
         "type": "object",
         "properties": {
@@ -4602,10 +4813,17 @@
             "example": 3500,
             "description": "할인된 가격"
           },
-          "categoryId": {
-            "type": "number",
-            "example": 1,
-            "description": "메뉴 카테고리 ID"
+          "categoryIds": {
+            "description": "메뉴 카테고리 ID 목록",
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           },
           "image": {
             "type": "string",
@@ -4661,10 +4879,17 @@
             "example": 4000,
             "description": "할인된 가격"
           },
-          "categoryId": {
-            "type": "number",
-            "example": 1,
-            "description": "메뉴 카테고리 ID"
+          "categoryIds": {
+            "description": "메뉴 카테고리 ID 목록",
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           },
           "imageUrl": {
             "type": "string",
@@ -4716,6 +4941,93 @@
             "type": "string",
             "example": "2024-01-01",
             "description": "삭제 일자"
+          }
+        }
+      },
+      "CreateMenuCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "커피",
+            "description": "메뉴 카테고리 이름"
+          },
+          "description": {
+            "type": "string",
+            "example": "다양한 커피 음료",
+            "description": "카테고리 설명"
+          },
+          "displayOrder": {
+            "type": "number",
+            "example": 1,
+            "description": "카테고리 표시 순서"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "description": "카테고리 활성 상태"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateMenuCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "에스프레소",
+            "description": "메뉴 카테고리 이름"
+          },
+          "description": {
+            "type": "string",
+            "example": "진한 에스프레소 기반 음료",
+            "description": "카테고리 설명"
+          },
+          "displayOrder": {
+            "type": "number",
+            "example": 2,
+            "description": "카테고리 표시 순서"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": false,
+            "description": "카테고리 활성 상태"
+          }
+        }
+      },
+      "CreateMenuItemCategoryDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "number",
+            "example": 1,
+            "description": "메뉴 아이템 ID"
+          },
+          "categoryId": {
+            "type": "number",
+            "example": 1,
+            "description": "카테고리 ID"
+          },
+          "displayOrder": {
+            "type": "number",
+            "example": 0,
+            "description": "표시 순서"
+          }
+        },
+        "required": [
+          "menuItemId",
+          "categoryId"
+        ]
+      },
+      "UpdateMenuItemCategoryDto": {
+        "type": "object",
+        "properties": {
+          "displayOrder": {
+            "type": "number",
+            "example": 0,
+            "description": "표시 순서"
           }
         }
       },
@@ -5068,10 +5380,10 @@
       "CreateOrderDto": {
         "type": "object",
         "properties": {
-          "storeId": {
-            "type": "number",
-            "example": 1,
-            "description": "매장 ID"
+          "storeDomain": {
+            "type": "string",
+            "example": "store.domain.com",
+            "description": "매장 도메인"
           },
           "items": {
             "description": "주문 아이템 목록",
@@ -5103,7 +5415,7 @@
           }
         },
         "required": [
-          "storeId",
+          "storeDomain",
           "items",
           "paymentMethod",
           "guestInfo"

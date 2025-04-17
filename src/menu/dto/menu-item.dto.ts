@@ -39,11 +39,29 @@ export class CreateMenuItemDto {
   @ValidateIf((o) => o.discountedPrice !== undefined && o.price !== undefined && o.discountedPrice > o.price)
   discountedPrice?: number;
 
-  @ApiProperty({ example: 1, description: '메뉴 카테고리 ID', required: false })
+  @ApiProperty({ 
+    type: [Number], 
+    description: '메뉴 카테고리 ID 목록', 
+    required: false,
+    example: [1, 2, 3]
+  })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.map(Number) : [Number(parsed)];
+      } catch (e) {
+        return [Number(value)];
+      }
+    }
+    return [Number(value)];
+  })
   @Type(() => Number)
-  @IsNumber()
-  categoryId?: number;
+  @IsNumber({}, { each: true })
+  categoryIds?: number[];
 
   @ApiProperty({ 
     type: 'string', 
@@ -106,11 +124,16 @@ export class UpdateMenuItemDto {
   @ValidateIf((o) => o.discountedPrice !== undefined && o.price !== undefined && o.discountedPrice > o.price)
   discountedPrice?: number;
 
-  @ApiProperty({ example: 1, description: '메뉴 카테고리 ID', required: false })
+  @ApiProperty({ 
+    type: [Number], 
+    description: '메뉴 카테고리 ID 목록', 
+    required: false,
+    example: [1, 2, 3]
+  })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
-  categoryId?: number;
+  @IsNumber({}, { each: true })
+  categoryIds?: number[];
 
   @ApiProperty({ example: 'iced_coffee.jpg', description: '메뉴 이미지', required: false })
   @IsOptional()
@@ -223,4 +246,4 @@ export class MenuItemQueryDto {
   @IsBoolean()
   @Type(() => Boolean)
   isRecommended?: boolean;
-}
+} 

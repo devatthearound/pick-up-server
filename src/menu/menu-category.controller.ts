@@ -42,9 +42,16 @@ export class MenuCategoryController {
   @Get('store/:storeId')
   @ApiOperation({ summary: '매장별 메뉴 카테고리 조회' })
   @ApiResponse({ status: 200, description: '매장별 메뉴 카테고리 목록을 반환합니다.' })
-  findByStoreId(@Param('storeId', ParseIntPipe) storeId: number) {
-    return this.menuCategoryService.findByStoreId(storeId);
+  findByStoreId(
+    @Param('storeId') storeId: string,
+    @Query('type') type: string
+  ) {
+    if (type === 'domain') {
+      return this.menuCategoryService.findByStoreDomain(storeId);
+    }
+    return this.menuCategoryService.findByStoreId(Number(storeId));
   }
+
 
   @Post('store/:storeId')
   @ApiOperation({ summary: '메뉴 카테고리 생성' })

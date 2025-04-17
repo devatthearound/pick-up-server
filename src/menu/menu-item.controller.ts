@@ -46,8 +46,13 @@ export class MenuItemController {
   @Get('store/:storeId')
   @ApiOperation({ summary: '매장별 메뉴 아이템 조회' })
   @ApiResponse({ status: 200, description: '매장별 메뉴 아이템 목록을 반환합니다.' })
-  findByStoreId(@Param('storeId', ParseIntPipe) storeId: number) {
-    return this.menuItemService.findByStoreId(storeId);
+  findByStoreId(
+    @Query('type') type: string,
+    @Param('storeId') storeId: number | string) {
+    if (type === 'domain') {
+      return this.menuItemService.findByStoreDomain(storeId as string);
+    }
+    return this.menuItemService.findByStoreId(Number(storeId));
   }
 
   @Get('category/:categoryId')

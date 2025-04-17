@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { MenuItem } from './entities/menu-item.entity';
+import { MenuItemCategory } from './entities/menu-item-category.entity';
 import { CreateMenuItemDto, UpdateMenuItemDto, MenuItemQueryDto } from './dto/menu-item.dto';
 import { Store } from '../store/entities/store.entity';
 import { Multer } from 'multer';
@@ -13,6 +14,8 @@ export class MenuItemService {
   constructor(
     @InjectRepository(MenuItem)
     private readonly menuItemRepository: Repository<MenuItem>,
+    @InjectRepository(MenuItemCategory)
+    private readonly menuItemCategoryRepository: Repository<MenuItemCategory>,
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
     private readonly s3Service: S3Service,
@@ -33,14 +36,15 @@ export class MenuItemService {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.menuItemRepository.createQueryBuilder('menuItem')
-      .leftJoinAndSelect('menuItem.category', 'category');
+      .leftJoinAndSelect('menuItem.menuItemCategories', 'menuItemCategory')
+      .leftJoinAndSelect('menuItemCategory.category', 'category');
 
     if (storeId) {
       queryBuilder.andWhere('menuItem.storeId = :storeId', { storeId });
     }
 
     if (categoryId) {
-      queryBuilder.andWhere('menuItem.categoryId = :categoryId', { categoryId });
+      queryBuilder.andWhere('menuItemCategory.categoryId = :categoryId', { categoryId });
     }
 
     if (typeof isAvailable === 'boolean') {
@@ -62,7 +66,7 @@ export class MenuItemService {
     queryBuilder.andWhere('menuItem.isDeleted = :isDeleted', { isDeleted: false });
 
     queryBuilder
-      .orderBy('menuItem.displayOrder', 'ASC')
+      .orderBy('menuItemCategory.displayOrder', 'ASC')
       .addOrderBy('menuItem.name', 'ASC')
       .skip(skip)
       .take(limit);
@@ -83,7 +87,7 @@ export class MenuItemService {
   async findOne(id: number) {
     const menuItem = await this.menuItemRepository.findOne({
       where: { id },
-      relations: ['category'],
+      relations: ['menuItemCategories', 'menuItemCategories.category'],
     });
 
     if (!menuItem) {
@@ -96,16 +100,33 @@ export class MenuItemService {
   async findByStoreId(storeId: number) {
     return this.menuItemRepository.find({
       where: { storeId, isAvailable: true },
-      relations: ['category'],
-      order: { displayOrder: 'ASC', name: 'ASC' },
+      relations: ['menuItemCategories', 'menuItemCategories.category'],
+      order: { name: 'ASC' },
+    });
+  }
+
+  async findByStoreDomain(domain: string) {
+    const store = await this.storeRepository.findOne({
+      where: { domain },
+    });
+    if (!store) {
+      throw new NotFoundException(`상점 도메인 ${domain}을 찾을 수 없습니다.`);
+    }
+    return this.menuItemRepository.find({
+      where: { storeId: store.id, isAvailable: true },
+      relations: ['menuItemCategories', 'menuItemCategories.category'],
+      order: { name: 'ASC' },
     });
   }
 
   async findByCategoryId(categoryId: number) {
-    return this.menuItemRepository.find({
-      where: { categoryId, isAvailable: true },
-      order: { displayOrder: 'ASC', name: 'ASC' },
+    const menuItemCategories = await this.menuItemCategoryRepository.find({
+      where: { categoryId },
+      relations: ['menuItem'],
+      order: { displayOrder: 'ASC' },
     });
+
+    return menuItemCategories.map(mic => mic.menuItem);
   }
 
   async verifyStoreOwnership(storeId: number, userId: number) {
@@ -121,7 +142,7 @@ export class MenuItemService {
   }
 
   async create(storeId: number, dto: CreateMenuItemDto, image: Express.Multer.File) {
-    // 이미지 업로드 처리 (S3 서비스 사용 가정)
+    // 이미지 업로드 처리
     let imageUrl: string | null = null;
     if (image) {
       imageUrl = await this.s3Service.uploadFile(image, 'menu-items');
@@ -138,12 +159,25 @@ export class MenuItemService {
       price: Number(dto.price),
       discountedPrice: dto.discountedPrice ? Number(dto.discountedPrice) : null,
       preparationTime: dto.preparationTime ? Number(dto.preparationTime) : null,
-      categoryId: dto.categoryId ? Number(dto.categoryId) : null,
-      displayOrder: 0,
       stockQuantity: null,
     } as unknown as MenuItem);
 
-    return this.menuItemRepository.save(menuItem);
+    const savedMenuItem = await this.menuItemRepository.save(menuItem);
+
+    // 카테고리 관계 생성
+    if (dto.categoryIds && dto.categoryIds.length > 0) {
+      const menuItemCategories = dto.categoryIds.map((categoryId, index) => {
+        return this.menuItemCategoryRepository.create({
+          menuItemId: savedMenuItem.id,
+          categoryId,
+          displayOrder: index,
+        });
+      });
+
+      await this.menuItemCategoryRepository.save(menuItemCategories);
+    }
+
+    return this.findOne(savedMenuItem.id);
   }
 
   async update(id: number, dto: UpdateMenuItemDto, image: Express.Multer.File) {
@@ -164,10 +198,30 @@ export class MenuItemService {
       price: dto.price ? Number(dto.price) : menuItem.price,
       discountedPrice: dto.discountedPrice ? Number(dto.discountedPrice) : menuItem.discountedPrice,
       preparationTime: dto.preparationTime ? Number(dto.preparationTime) : menuItem.preparationTime,
-      categoryId: dto.categoryId ? Number(dto.categoryId) : menuItem.categoryId,
     });
-    
-    return this.menuItemRepository.save(menuItem);
+
+    const updatedMenuItem = await this.menuItemRepository.save(menuItem);
+
+    // 카테고리 관계 업데이트
+    if (dto.categoryIds) {
+      // 기존 관계 삭제
+      await this.menuItemCategoryRepository.delete({ menuItemId: id });
+
+      // 새로운 관계 생성
+      if (dto.categoryIds.length > 0) {
+        const menuItemCategories = dto.categoryIds.map((categoryId, index) => {
+          return this.menuItemCategoryRepository.create({
+            menuItemId: id,
+            categoryId,
+            displayOrder: index,
+          });
+        });
+
+        await this.menuItemCategoryRepository.save(menuItemCategories);
+      }
+    }
+
+    return this.findOne(id);
   }
 
   async remove(id: number) {
@@ -194,8 +248,8 @@ export class MenuItemService {
   async findPopularItems(storeId: number, limit = 10) {
     return this.menuItemRepository.find({
       where: { storeId, isAvailable: true, isPopular: true },
-      relations: ['category'],
-      order: { displayOrder: 'ASC' },
+      relations: ['menuItemCategories', 'menuItemCategories.category'],
+      order: { name: 'ASC' },
       take: limit,
     });
   }
@@ -203,8 +257,8 @@ export class MenuItemService {
   async findNewItems(storeId: number, limit = 10) {
     return this.menuItemRepository.find({
       where: { storeId, isAvailable: true, isNew: true },
-      relations: ['category'],
-      order: { displayOrder: 'ASC' },
+      relations: ['menuItemCategories', 'menuItemCategories.category'],
+      order: { name: 'ASC' },
       take: limit,
     });
   }
@@ -212,8 +266,8 @@ export class MenuItemService {
   async findRecommendedItems(storeId: number, limit = 10) {
     return this.menuItemRepository.find({
       where: { storeId, isAvailable: true, isRecommended: true },
-      relations: ['category'],
-      order: { displayOrder: 'ASC' },
+      relations: ['menuItemCategories', 'menuItemCategories.category'],
+      order: { name: 'ASC' },
       take: limit,
     });
   }

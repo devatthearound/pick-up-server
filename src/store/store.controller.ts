@@ -28,8 +28,14 @@ export class StoreController {
   @ApiResponse({ status: 200, description: '상점 정보 반환' })
   @ApiResponse({ status: 404, description: '상점을 찾을 수 없음' })
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.storeService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @Query('type') type: string
+  ) {
+    if (type === 'domain') {
+      return this.storeService.findOneByDomain(id);
+    }
+    return this.storeService.findOne(Number(id));
   }
 
   @ApiOperation({ summary: '내 상점 목록 조회' })
