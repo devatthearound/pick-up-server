@@ -57,6 +57,12 @@ export class MenuItem {
   @Column({ default: 0, name: 'display_order' })
   displayOrder: number;
 
+  @Column({ default: false, name: 'is_deleted' })
+  isDeleted: boolean;
+
+  @Column({ default: false, name: 'deleted_at' })
+  deletedAt: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

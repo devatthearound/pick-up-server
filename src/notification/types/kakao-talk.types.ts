@@ -37,5 +37,5 @@ export interface KakaoTalkTemplate {
   templateCode: string;
   templateName: string;
   templateContent: string;
-  buttons: KakaoTalkButton[];
+  buttons?: KakaoTalkButton[];
 } 

@@ -150,17 +150,17 @@ export class NotificationService {
 
     // 상태별 알림 내용 설정
     switch (status) {
-      case OrderStatus.ACCEPTED:
-        // 고객에게 주문 수락 알림
-        notifications.push({
-          orderId,
-          recipientId: order.customerId || 0,
-          recipientType: RecipientType.CUSTOMER,
-          type: 'order_accepted',
-          title: '주문이 수락되었습니다',
-          message: '회원님의 주문이 가게에서 수락되었습니다. 조리가 시작됩니다.',
-        });
-        break;
+      // case OrderStatus.ACCEPTED:
+      //   // 고객에게 주문 수락 알림
+      //   notifications.push({
+      //     orderId,
+      //     recipientId: order.customerId || 0,
+      //     recipientType: RecipientType.CUSTOMER,
+      //     type: 'order_accepted',
+      //     title: '주문이 수락되었습니다',
+      //     message: '회원님의 주문이 가게에서 수락되었습니다. 조리가 시작됩니다.',
+      //   });
+      //   break;
 
       case OrderStatus.REJECTED:
         // 고객에게 주문 거부 알림

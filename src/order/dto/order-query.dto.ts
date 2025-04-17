@@ -67,12 +67,12 @@ export class OrderQueryDto {
   @ApiProperty({ required: false, description: '주문 생성 시간 이후 (YYYY-MM-DD 또는 ISO 날짜)' })
   @IsOptional()
   @IsDateString()
-  createdFrom?: string;
+  startDate?: string;
 
   @ApiProperty({ required: false, description: '주문 생성 시간 이전 (YYYY-MM-DD 또는 ISO 날짜)' })
   @IsOptional()
   @IsDateString()
-  createdTo?: string;
+  endDate?: string;
 
   @ApiProperty({ required: false, enum: SortBy, description: '정렬 기준' })
   @IsOptional()

@@ -59,6 +59,8 @@ export class MenuItemService {
       queryBuilder.andWhere('menuItem.isRecommended = :isRecommended', { isRecommended });
     }
 
+    queryBuilder.andWhere('menuItem.isDeleted = :isDeleted', { isDeleted: false });
+
     queryBuilder
       .orderBy('menuItem.displayOrder', 'ASC')
       .addOrderBy('menuItem.name', 'ASC')
@@ -214,5 +216,13 @@ export class MenuItemService {
       order: { displayOrder: 'ASC' },
       take: limit,
     });
+  }
+
+  async deactivate(id: number) {
+    const menuItem = await this.findOne(id);
+    menuItem.isAvailable = false;
+    menuItem.isDeleted = true;
+    menuItem.deletedAt = new Date();
+    return this.menuItemRepository.save(menuItem);
   }
 }

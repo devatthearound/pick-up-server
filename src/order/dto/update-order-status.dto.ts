@@ -3,7 +3,7 @@ import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { OrderStatus } from '../entities/order.entity';
 
 export class UpdateOrderStatusDto {
-  @ApiProperty({ enum: OrderStatus, description: '주문 상태', example: OrderStatus.ACCEPTED })
+  @ApiProperty({ enum: OrderStatus, description: '주문 상태', example: OrderStatus.PREPARING })
   @IsEnum(OrderStatus)
   status: OrderStatus;
 

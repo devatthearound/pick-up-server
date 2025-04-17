@@ -15,6 +15,7 @@ import { OptionItem } from '../menu/entities/option_items.entity';
 import { Store } from '../store/entities/store.entity';
 import { StoreOperationStatus } from '../store/entities/store-operation-status.entity';
 import { FirebaseMessagingModule } from '../notification/firebase-messaging.module';
+import { KakaoTalkService } from '../notification/kakao-talk.service';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { FirebaseMessagingModule } from '../notification/firebase-messaging.modu
     FirebaseMessagingModule,
   ],
   controllers: [OrderController, NotificationController],
-  providers: [OrderService, NotificationService],
+  providers: [OrderService, NotificationService, KakaoTalkService],
   exports: [OrderService, NotificationService],
 })
 export class OrderModule {}

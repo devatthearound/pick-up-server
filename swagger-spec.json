@@ -3402,7 +3402,6 @@
               "type": "string",
               "enum": [
                 "pending",
-                "accepted",
                 "rejected",
                 "preparing",
                 "ready",
@@ -3446,7 +3445,7 @@
             }
           },
           {
-            "name": "createdFrom",
+            "name": "startDate",
             "required": false,
             "in": "query",
             "description": "주문 생성 시간 이후 (YYYY-MM-DD 또는 ISO 날짜)",
@@ -3455,7 +3454,7 @@
             }
           },
           {
-            "name": "createdTo",
+            "name": "endDate",
             "required": false,
             "in": "query",
             "description": "주문 생성 시간 이전 (YYYY-MM-DD 또는 ISO 날짜)",
@@ -4706,6 +4705,17 @@
             "type": "string",
             "description": "메뉴 이미지 파일",
             "format": "binary"
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "example": true,
+            "description": "삭제 여부"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01",
+            "description": "삭제 일자"
           }
         }
       },
@@ -5106,7 +5116,6 @@
             "type": "string",
             "enum": [
               "pending",
-              "accepted",
               "rejected",
               "preparing",
               "ready",
@@ -5114,7 +5123,7 @@
               "canceled"
             ],
             "description": "주문 상태",
-            "example": "accepted"
+            "example": "preparing"
           },
           "rejectionReason": {
             "type": "string",

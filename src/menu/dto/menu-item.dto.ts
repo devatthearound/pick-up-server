@@ -7,7 +7,8 @@ import {
   IsBoolean, 
   Min, 
   Max, 
-  ValidateIf 
+  ValidateIf,
+  IsDateString
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Transform } from 'class-transformer';
@@ -161,6 +162,17 @@ export class UpdateMenuItemDto {
   })
   @IsOptional()
   image?: any;
+
+  @ApiProperty({ example: true, description: '삭제 여부', required: false })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true')
+  @IsBoolean()
+  isDeleted?: boolean;
+
+  @ApiProperty({ example: '2024-01-01', description: '삭제 일자', required: false })
+  @IsOptional()
+  @IsDateString()
+  deletedAt?: Date;
 }
 
 export class MenuItemQueryDto {

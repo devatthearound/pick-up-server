@@ -53,6 +53,12 @@ export class FirebaseMessagingService {
         body,
       },
       data: data ? this.convertToStringValues(data) : undefined,
+      android: {
+        notification: {
+          sound: 'custom_sound',
+          channelId: 'default',
+        },
+      },
     };
 
     try {

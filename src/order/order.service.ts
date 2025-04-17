@@ -15,6 +15,8 @@ import { Store } from '../store/entities/store.entity';
 import { StoreOperationStatus } from '../store/entities/store-operation-status.entity';
 import { CreatePaymentDto, UpdatePaymentStatusDto } from './dto/payment.dto';
 import { NotificationService } from './notification.service';
+import { KakaoTalkService } from '../notification/kakao-talk.service';
+import { TEMPLATE_CODES } from 'src/notification/constants/kakao-talk.constants';
 
 @Injectable()
 export class OrderService {
@@ -39,6 +41,7 @@ export class OrderService {
     private storeOperationStatusRepository: Repository<StoreOperationStatus>,
     private connection: Connection,
     private notificationService: NotificationService,
+    private kakaoTalkService: KakaoTalkService,
   ) {}
 
   async findAll(queryDto: OrderQueryDto) {
@@ -52,8 +55,8 @@ export class OrderService {
       paymentStatus,
       pickupFrom,
       pickupTo,
-      createdFrom,
-      createdTo,
+      startDate,
+      endDate,
       sortBy = SortBy.CREATED_AT,
       sortOrder = SortOrder.DESC,
       activeOnly,
@@ -99,12 +102,16 @@ export class OrderService {
       queryBuilder.andWhere('order.pickupTime <= :pickupTo', { pickupTo: new Date(pickupTo) });
     }
 
-    if (createdFrom) {
-      queryBuilder.andWhere('order.createdAt >= :createdFrom', { createdFrom: new Date(createdFrom) });
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      queryBuilder.andWhere('order.createdAt >= :startDate', { startDate: start });
     }
 
-    if (createdTo) {
-      queryBuilder.andWhere('order.createdAt <= :createdTo', { createdTo: new Date(createdTo) });
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      queryBuilder.andWhere('order.createdAt <= :endDate', { endDate: end });
     }
 
     if (activeOnly) {
@@ -358,8 +365,8 @@ export class OrderService {
         store.owner.user.id,
         'owner',
         'new_order',
-        '새로운 주문이 들어왔습니다',
-        `새로운 주문이 접수되었습니다. 주문번호: ${orderNumber}`,
+        '☎ 새로운 주문이 접수되었습니다.',
+        `사장님 주문 수락하기를 눌러주세요.`,
       );
 
       return {
@@ -418,7 +425,87 @@ export class OrderService {
     // 알림 생성 및 발송
     await this.notificationService.createOrderStatusNotification(id, updateOrderStatusDto.status);
 
+    // 카카오톡 알림 발송
+    if (order.customerPhone) {
+      const store = await this.storeRepository.findOne({
+        where: { id: order.storeId },
+      });
+
+      const variables = {
+        userPhone: order.customerPhone,
+        userName: order.customerName || '고객',
+        storeName: store?.name || '매장',
+        orderNumber: order.orderNumber,
+        status: this.getStatusText(updateOrderStatusDto.status),
+        rejectionReason: updateOrderStatusDto.rejectionReason || '',
+        orderName : order.orderItems[0].menuItem.name + '외 ' + (order.orderItems.length - 1) + '개',
+        time : '10',
+        link : `https://www.ezpickup.kr/u/order/${order.orderNumber}`,
+      };
+
+      if(updateOrderStatusDto.status === OrderStatus.PREPARING) {
+        await this.kakaoTalkService.sendMessage(
+          TEMPLATE_CODES.PREPARING,
+          variables.userPhone,
+          {
+            storeName : variables.storeName,
+            orderNumber : variables.orderNumber,
+            orderName : variables.orderName,
+            time : variables.time,
+            link : variables.link,
+          }
+        );
+      }else if(updateOrderStatusDto.status === OrderStatus.READY) {
+        await this.kakaoTalkService.sendMessage(
+          TEMPLATE_CODES.READY,
+          variables.userPhone,
+          {
+            storeName : variables.storeName,
+            orderNumber : variables.orderNumber,
+            link : variables.link,
+          }
+        );
+      }else if(updateOrderStatusDto.status === OrderStatus.COMPLETED) {
+        await this.kakaoTalkService.sendMessage(
+          TEMPLATE_CODES.PICKUP_COMPLETED,
+          variables.userPhone,
+          {
+            storeName : variables.storeName,
+            orderNumber : variables.orderNumber,
+            link : variables.link,
+          }
+        );
+      }else if(updateOrderStatusDto.status === OrderStatus.REJECTED) {
+        await this.kakaoTalkService.sendMessage(
+          TEMPLATE_CODES.ORDER_REJECTED,
+          variables.userPhone,
+          {
+            storeName : variables.storeName,
+            customerName : variables.userName,
+            orderNumber : variables.orderNumber,
+            reason : variables.rejectionReason,
+            link : variables.link,
+          }
+        );
+      }else{
+        // 아무것도 없음
+      }
+    }
+
     return updatedOrder;
+  }
+
+  private getStatusText(status: OrderStatus): string {
+    const statusTexts = {
+      [OrderStatus.PENDING]: '접수 대기 중',
+      // [OrderStatus.ACCEPTED]: '주문 접수됨',
+      [OrderStatus.PREPARING]: '준비 중',
+      [OrderStatus.READY]: '준비 완료',
+      [OrderStatus.COMPLETED]: '픽업 완료',
+      [OrderStatus.REJECTED]: '주문 거절',
+      [OrderStatus.CANCELED]: '주문 취소',
+    };
+    return statusTexts[status] || status;
   }
 
   async cancelOrder(id: number, customerId: number, reason: string) {
@@ -430,7 +517,7 @@ export class OrderService {
     }
 
     // 취소 가능 상태인지 확인
-    if (![OrderStatus.PENDING, OrderStatus.ACCEPTED].includes(order.status)) {
+    if (![OrderStatus.PENDING].includes(order.status)) {
       throw new BadRequestException('이미 처리 중인 주문은 취소할 수 없습니다.');
     }
 
@@ -600,8 +687,8 @@ export class OrderService {
   // 주문 상태 변경 유효성 검사
   private validateStatusChange(currentStatus: OrderStatus, newStatus: OrderStatus) {
     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-      [OrderStatus.PENDING]: [OrderStatus.ACCEPTED, OrderStatus.REJECTED, OrderStatus.CANCELED],
-      [OrderStatus.ACCEPTED]: [OrderStatus.PREPARING, OrderStatus.CANCELED],
+      [OrderStatus.PENDING]: [OrderStatus.PREPARING, OrderStatus.REJECTED, OrderStatus.CANCELED],
+      // [OrderStatus.ACCEPTED]: [OrderStatus.PREPARING, OrderStatus.CANCELED],
       [OrderStatus.PREPARING]: [OrderStatus.READY],
       [OrderStatus.READY]: [OrderStatus.COMPLETED],
       [OrderStatus.COMPLETED]: [],

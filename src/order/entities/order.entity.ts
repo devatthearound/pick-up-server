@@ -8,7 +8,7 @@ import { OrderNotification } from './order-notification.entity';
 
 export enum OrderStatus {
   PENDING = 'pending',
-  ACCEPTED = 'accepted',
+  // ACCEPTED = 'accepted',
   REJECTED = 'rejected',
   PREPARING = 'preparing',
   READY = 'ready',

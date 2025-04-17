@@ -162,6 +162,6 @@ export class MenuItemController {
     // 메뉴 소유 확인
     const menuItem = await this.menuItemService.findOne(id);
     await this.menuItemService.verifyStoreOwnership(menuItem.storeId, req.user.ownerId);
-    return this.menuItemService.remove(id);
+    return this.menuItemService.deactivate(id);
   }
 }
