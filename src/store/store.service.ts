@@ -9,6 +9,7 @@ import { StoreQueryDto, SortBy, SortOrder } from './dto/store-query.dto';
 import { OwnerProfile } from '../users/entities/owner-profile.entity';
 import { S3Service } from '../common/services/s3.service';
 import { Multer } from 'multer';
+import { OperatingHoursService } from './operating-hour.service';
 
 @Injectable()
 export class StoreService {
@@ -20,6 +21,7 @@ export class StoreService {
     @InjectRepository(OwnerProfile)
     private ownerProfileRepository: Repository<OwnerProfile>,
     private s3Service: S3Service,
+    private readonly operatingHoursService: OperatingHoursService,
   ) {}
 
   async findAll(queryDto: StoreQueryDto) {
@@ -94,6 +96,41 @@ export class StoreService {
     
     if (!store) {
       throw new NotFoundException(`상점 도메인 ${domain}을 찾을 수 없습니다.`);
+    }
+
+    // 운영시간인지 체크
+    const currentTime = new Date();
+    const dayOfWeek = currentTime.getDay();
+    const hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes();
+
+    const operationStatus = await this.operatingHoursService.findAllByStoreId(store.id);
+
+    console.log("operationStatus", operationStatus);
+    // 대소문자 통일
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+    console.log("today", today);
+    const todayOperationStatus = operationStatus.operatingHoursByDay[today];
+
+    console.log("todayOperationStatus", todayOperationStatus);
+    if (!todayOperationStatus) {
+      throw new BadRequestException('상점이 운영시간이 아닙니다.');
+    }
+
+    // 시간을 문자열에서 Date 객체로 변환
+    const todayDate = new Date();
+    const [openHour, openMinute] = todayOperationStatus.openingTime.split(':').map(Number);
+    const [closeHour, closeMinute] = todayOperationStatus.closingTime.split(':').map(Number);
+    
+    const openingTime = new Date(todayDate);
+    openingTime.setHours(openHour, openMinute, 0, 0);
+    
+    const closingTime = new Date(todayDate);
+    closingTime.setHours(closeHour, closeMinute, 0, 0);
+
+    if (currentTime < openingTime || currentTime > closingTime) {
+      throw new BadRequestException('상점이 운영시간이 아닙니다.');
     }
     
     return store;
