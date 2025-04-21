@@ -141,17 +141,11 @@ export class AuthService {
 
   async createTokens(user: User, deviceInfo: any, ipAddress: string) {
     // 사용자 역할 결정
-    let role;
+    let role = UserRole.CUSTOMER;
 
-    console.log('user:', user);
-    if (user.customerProfile) {
-      role = UserRole.CUSTOMER;
-    } else if (user.ownerProfile) {
+    if (user.ownerProfile) {
       role = UserRole.OWNER;
-    } else {
-      throw new UnauthorizedException('유효하지 않은 사용자 역할입니다');
     }
-  
     // 세션 저장
     const session = new UserSession();
     session.user = user;
@@ -161,14 +155,14 @@ export class AuthService {
     session.lastActivityAt = new Date();
     session.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7일
     
-    await this.userSessionRepository.save(session);
+    const savedSession = await this.userSessionRepository.save(session);
   
     // 토큰에 역할 및 세션 ID 포함
     const payload = {
       sub: user.id,
       email: user.email,
       role,
-      sessionId: session.id,
+      sessionId: savedSession.id,
       isActive: user.isActive,
       ...(role === UserRole.OWNER && {
         ownerId: user.ownerProfile?.id
@@ -196,10 +190,7 @@ export class AuthService {
 
   async refreshTokens(refreshToken: string) {
     try {
-      console.log('1. refreshToken:', refreshToken);
-      
       const payload = this.jwtService.verify(refreshToken);
-      console.log('2. Verified payload:', payload);
       
       // 세션 조회 시 refreshToken이 아닌 sessionId로 조회
       const session = await this.userSessionRepository.findOne({
@@ -209,15 +200,12 @@ export class AuthService {
         },
         relations: ['user', 'user.customerProfile', 'user.ownerProfile'],
       });
-      console.log('3. Found session:', session);
-  
+
       if (!session) {
-        console.log('4. Session not found');
         throw new UnauthorizedException('유효하지 않은 세션입니다');
       }
   
       if (session.expiresAt < new Date()) {
-        console.log('5. Session expired');
         session.isValid = false;
         await this.userSessionRepository.save(session);
         throw new UnauthorizedException('세션이 만료되었습니다');
@@ -225,14 +213,12 @@ export class AuthService {
   
       // 사용자 활성 상태 확인
       if (!session.user.isActive) {
-        console.log('6. User not active');
         throw new UnauthorizedException('비활성화된 계정입니다');
       }
   
       // 기존 세션 무효화 (토큰 순환을 위해)
       session.isValid = false;
       await this.userSessionRepository.save(session);
-      console.log('7. Session invalidated');
   
       // 새로운 토큰 발급
       const tokens = await this.createTokens(
@@ -240,7 +226,6 @@ export class AuthService {
         session.deviceInfo,
         session.ipAddress,
       );
-      console.log('8. New tokens created');
   
       return tokens;
     } catch (error) {

@@ -1,15 +1,15 @@
+// src/auth/guards/jwt-auth.guard.ts
 import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserSession } from '../../session/entities/user-session.entity';
+import { SessionService } from '../../session/session.service';
+import { Inject, Optional } from '@nestjs/common';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
-    @InjectRepository(UserSession)
-    private sessionRepository: Repository<UserSession>,
+    @Optional() @Inject(SessionService)
+    private sessionService?: SessionService,
   ) {
     super();
   }
@@ -24,7 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
     
     // 세션 활동 시간 업데이트 추가 작업
-    if (user.sessionId) {
+    if (user.sessionId && this.sessionService) {
       this.updateSessionActivity(user.sessionId);
     }
     
@@ -33,15 +33,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   private async updateSessionActivity(sessionId: number) {
     try {
-      await this.sessionRepository.update(
-        sessionId,
-        { lastActivityAt: new Date() }
-      );
+      if (this.sessionService) {
+        await this.sessionService.trackSessionActivity(sessionId);
+      }
     } catch (error) {
       // 세션 업데이트 실패 시 로그만 남기고 인증 프로세스는 계속 진행
       console.error('세션 활동 시간 업데이트 실패:', error);
     }
   }
 }
-
-
