@@ -108,6 +108,7 @@ export class NotificationService {
     title: string,
     message: string
   ) {
+    // 알림 엔티티 생성 및 저장
     const notification = this.notificationRepository.create({
       orderId,
       recipientId,
@@ -121,15 +122,17 @@ export class NotificationService {
 
     const savedNotification = await this.notificationRepository.save(notification);
 
-    try{
-      // 푸시 알림 전송
+    // 푸시 알림 전송 시도 (실패해도 알림 엔티티는 유지)
+    try {
       await this.sendPushNotification(recipientId, title, message, {
         notificationId: savedNotification.id,
         orderId,
         type,
       });
+      console.log(`알림 전송 성공: ${recipientId}에게 ${type} 알림 전송 완료`);
     } catch (error) {
-      console.error('Error in createOrderNotification:', error);
+      console.error('알림 전송 중 오류 발생:', error.message);
+      // 오류 로깅만 하고 기능 계속 진행
     }
 
     return savedNotification;

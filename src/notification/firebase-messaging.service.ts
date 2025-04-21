@@ -38,34 +38,52 @@ export class FirebaseMessagingService {
     body: string,
     data?: Record<string, any>,
   ): Promise<void> {
-    const tokens = await this.userFcmTokenRepository.find({
-      where: { userId, isActive: true },
-    });
-
-    if (tokens.length === 0) {
-      return;
-    }
-
-    const message: messaging.Message = {
-      token: tokens[0].fcmToken,
-      notification: {
-        title,
-        body,
-      },
-      data: data ? this.convertToStringValues(data) : undefined,
-      android: {
-        notification: {
-          sound: 'custom_sound',
-          channelId: 'default',
-        },
-      },
-    };
-
     try {
-      await this.messaging.send(message);
+      const tokens = await this.userFcmTokenRepository.find({
+        where: { userId, isActive: true },
+      });
+
+      if (tokens.length === 0) {
+        console.log(`사용자 ID ${userId}에 대한 활성 FCM 토큰이 없습니다.`);
+        return;
+      }
+
+      const message: messaging.Message = {
+        token: tokens[0].fcmToken,
+        notification: {
+          title,
+          body,
+        },
+        data: data ? this.convertToStringValues(data) : undefined,
+        android: {
+          notification: {
+            sound: 'custom_sound',
+            channelId: 'default',
+          },
+        },
+      };
+
+      try {
+        await this.messaging.send(message);
+      } catch (error) {
+        // FCM 토큰이 유효하지 않은 경우 처리
+        if (
+          error.code === 'messaging/registration-token-not-registered' ||
+          error.errorInfo?.code === 'messaging/registration-token-not-registered'
+        ) {
+          // 해당 토큰 비활성화
+          console.log(`유효하지 않은 FCM 토큰 비활성화: ${tokens[0].fcmToken}`);
+          await this.userFcmTokenRepository.update(
+            { id: tokens[0].id },
+            { isActive: false }
+          );
+        }
+        throw error;
+      }
     } catch (error) {
-      console.error('Failed to send notification:', error);
-      throw error;
+      console.error('알림 전송 실패:', error);
+      // 에러를 전파하되, 애플리케이션 중단 방지
+      // throw error;
     }
   }
 
