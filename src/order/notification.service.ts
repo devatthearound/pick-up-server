@@ -7,6 +7,8 @@ import { RecipientType } from './entities/order-notification.entity';
 import { NotificationQueryDto, UpdateNotificationDto, CreateNotificationDto } from './dto/notification.dto';
 import { Order } from './entities/order.entity';
 import { FirebaseMessagingService } from '../notification/firebase-messaging.service';
+import { KakaoTalkService } from '../notification/kakao-talk.service';
+import { TEMPLATE_CODES } from 'src/notification/constants/kakao-talk.constants';
 
 interface NotificationData {
   orderId: number;
@@ -25,6 +27,7 @@ export class NotificationService {
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
     private firebaseMessagingService: FirebaseMessagingService,
+    private kakaoTalkService: KakaoTalkService
   ) {}
 
   async findAllByRecipient(recipientId: number, recipientType: RecipientType, queryDto: NotificationQueryDto) {
@@ -132,6 +135,21 @@ export class NotificationService {
       console.log(`알림 전송 성공: ${recipientId}에게 ${type} 알림 전송 완료`);
     } catch (error) {
       console.error('알림 전송 중 오류 발생:', error.message);
+      try{
+        await this.kakaoTalkService.sendMessage(
+            TEMPLATE_CODES.ORDER_REJECTED,
+            '01042051236',
+          {
+            storeName : '도넛캠프-관리자',
+            customerName : '000',
+            orderNumber : '0100000000',
+            reason : '알림 전송 중 오류 발생: ',
+            link : 'https://www.ezpickup.kr/bizes/store/10/manage/orders',
+          }
+        );
+      } catch (error) {
+        console.error('카카오톡 알림 전송 중 오류 발생:', error.message);
+      }
       // 오류 로깅만 하고 기능 계속 진행
     }
 
