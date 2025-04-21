@@ -37,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('사용자를 찾을 수 없거나 비활성화된 계정입니다');
       }
 
+      console.log('payload', payload);
       // 2. 세션 유효성 확인
       const session = await this.sessionRepository.findOne({
         where: { 

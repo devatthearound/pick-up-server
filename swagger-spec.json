@@ -2407,33 +2407,6 @@
         "operationId": "MenuItemCategoryController_findAll",
         "parameters": [
           {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "페이지 번호",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "페이지당 항목 수",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "storeId",
-            "required": false,
-            "in": "query",
-            "description": "매장 ID로 필터링",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
             "name": "menuItemId",
             "required": false,
             "in": "query",

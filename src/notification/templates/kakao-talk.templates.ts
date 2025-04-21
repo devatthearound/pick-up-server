@@ -14,11 +14,12 @@ export const KAKAO_TALK_TEMPLATES: Record<string, KakaoTalkTemplate> = {
 ※ 매장 운영 사정에 따라 준비시간이 변경될 수 있습니다.`,
     buttons: [
       {
+        type: 'WL',
         name: '주문 확인하기',
         linkType: 'WL',
         linkName: '주문 확인하기',
-        linkMobile: 'https://www.ezpickup.kr/#{link}',
-        linkPc: 'https://www.ezpickup.kr/#{link}',
+        linkMobile: 'https://www.ezpickup.kr/{{link}}',
+        linkPc: 'https://www.ezpickup.kr/{{link}}',
       },
     ],
   },
@@ -34,11 +35,12 @@ export const KAKAO_TALK_TEMPLATES: Record<string, KakaoTalkTemplate> = {
 감사합니다.`,
     buttons: [
       {
+        type: 'WL',
         name: '주문 확인하기',
         linkType: 'WL',
         linkName: '주문 확인하기',
-        linkMobile: 'https://www.ezpickup.kr/#{link}',
-        linkPc: 'https://www.ezpickup.kr/#{link}',
+        linkMobile: 'https://www.ezpickup.kr/{{link}}',
+        linkPc: 'https://www.ezpickup.kr/{{link}}',
       },
     ],
   },
@@ -56,11 +58,12 @@ export const KAKAO_TALK_TEMPLATES: Record<string, KakaoTalkTemplate> = {
 감사합니다.`,
     buttons: [
       {
+        type: 'WL',
         name: '주문 확인하기',
         linkType: 'WL',
         linkName: '주문 확인하기',
-        linkMobile: 'https://www.ezpickup.kr/#{link}',
-        linkPc: 'https://www.ezpickup.kr/#{link}',
+        linkMobile: 'https://www.ezpickup.kr/{{link}}',
+        linkPc: 'https://www.ezpickup.kr/{{link}}',
       },
     ],
   },

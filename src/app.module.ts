@@ -37,7 +37,7 @@ import { NotificationModule } from './notification/notification.module';
         database: configService.get('database.database'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false,
-        logging: process.env.NODE_ENV !== 'production',
+        logging: false,
       }),
       inject: [ConfigService],
     }),

@@ -121,12 +121,16 @@ export class NotificationService {
 
     const savedNotification = await this.notificationRepository.save(notification);
 
-    // 푸시 알림 전송
-    await this.sendPushNotification(recipientId, title, message, {
-      notificationId: savedNotification.id,
-      orderId,
-      type,
-    });
+    try{
+      // 푸시 알림 전송
+      await this.sendPushNotification(recipientId, title, message, {
+        notificationId: savedNotification.id,
+        orderId,
+        type,
+      });
+    } catch (error) {
+      console.error('Error in createOrderNotification:', error);
+    }
 
     return savedNotification;
   }

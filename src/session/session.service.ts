@@ -17,8 +17,8 @@ export class SessionService {
     const now = new Date();
     await this.userSessionRepository.createQueryBuilder()
       .delete()
-      .where('expires_at < :now', { now })
-      .orWhere('is_valid = :isValid', { isValid: false })
+      .where('expiresAt < :now', { now })
+      .orWhere('isValid = :isValid', { isValid: false })
       .execute();
   }
 

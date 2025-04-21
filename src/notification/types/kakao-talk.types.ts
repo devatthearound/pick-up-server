@@ -19,6 +19,7 @@ export interface KakaoTalkMessage {
 }
 
 export interface KakaoTalkButton {
+  type: string;
   name: string;
   linkType: string;
   linkName: string;

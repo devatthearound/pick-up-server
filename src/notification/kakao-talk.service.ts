@@ -71,8 +71,8 @@ export class KakaoTalkService {
           content: this.replaceTemplateVariables(template.templateContent, variables),
           buttons: template.buttons?.map(button => ({
             ...button,
-            linkMobile: this.replaceTemplateVariables(button.linkMobile, variables),
-            linkPc: this.replaceTemplateVariables(button.linkPc, variables),
+            linkMobile: this.replaceTemplateVariables(button.linkMobile, variables).replace('https://www.ezpickup.kr/https://www.ezpickup.kr', 'https://www.ezpickup.kr'),
+            linkPc: this.replaceTemplateVariables(button.linkPc, variables).replace('https://www.ezpickup.kr/https://www.ezpickup.kr', 'https://www.ezpickup.kr'),
           })),
         },
       ],
@@ -98,6 +98,7 @@ export class KakaoTalkService {
         message: '메시지가 성공적으로 전송되었습니다.',
       };
     } catch (error) {
+      console.error('카카오톡 알림톡 전송 실패:', error.response?.data || error.message);
       return {
         success: false,
         status: error.response?.status || 500,

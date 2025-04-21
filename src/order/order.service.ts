@@ -360,6 +360,7 @@ export class OrderService {
         );
       }
 
+
       console.log('store.owner.user.id', store.owner.user.id);
       // 사장님에게 새 주문 알림
       await this.notificationService.createOrderNotification(
@@ -388,8 +389,11 @@ export class OrderService {
   }
 
   async updateStatus(id: number, updateOrderStatusDto: UpdateOrderStatusDto, userId?: number) {
+    console.log('updateStatus', id, updateOrderStatusDto, userId);
     const order = await this.findOne(id);
     const previousStatus = order.status;
+
+    console.log('order.customerPhone', order.customerPhone);
 
     // 상태 변경 가능 여부 검증
     this.validateStatusChange(previousStatus, updateOrderStatusDto.status);
@@ -425,8 +429,10 @@ export class OrderService {
     await this.orderStatusHistoryRepository.save(statusHistory);
 
     // 알림 생성 및 발송
-    await this.notificationService.createOrderStatusNotification(id, updateOrderStatusDto.status);
+    // await this.notificationService.createOrderStatusNotification(id, updateOrderStatusDto.status);
 
+
+    console.log('order.customerPhone', order.customerPhone);
     // 카카오톡 알림 발송
     if (order.customerPhone) {
       const store = await this.storeRepository.findOne({
@@ -442,11 +448,14 @@ export class OrderService {
         rejectionReason: updateOrderStatusDto.rejectionReason || '',
         orderName : order.orderItems[0].menuItem.name + '외 ' + (order.orderItems.length - 1) + '개',
         time : '10',
-        link : `https://www.ezpickup.kr/u/order/${order.orderNumber}`,
+        link : `https://www.ezpickup.kr/order/${order.orderNumber}`,
       };
 
-      if(updateOrderStatusDto.status === OrderStatus.PREPARING) {
-        await this.kakaoTalkService.sendMessage(
+      console.log('updateOrderStatusDto.status', updateOrderStatusDto.status);
+      try {
+        if(updateOrderStatusDto.status === OrderStatus.PREPARING) {
+          console.log('TEMPLATE_CODES.PREPARING', TEMPLATE_CODES.PREPARING);
+          const res = await this.kakaoTalkService.sendMessage(
           TEMPLATE_CODES.PREPARING,
           variables.userPhone,
           {
@@ -457,6 +466,7 @@ export class OrderService {
             link : variables.link,
           }
         );
+        console.log('res', res);
       }else if(updateOrderStatusDto.status === OrderStatus.READY) {
         await this.kakaoTalkService.sendMessage(
           TEMPLATE_CODES.READY,
@@ -491,6 +501,9 @@ export class OrderService {
         );
       }else{
         // 아무것도 없음
+      }
+      } catch (error) {
+        console.error('카카오톡 알림 발송 오류:', error);
       }
     }
 
