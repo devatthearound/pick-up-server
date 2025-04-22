@@ -447,7 +447,7 @@ export class OrderService {
         status: this.getStatusText(updateOrderStatusDto.status),
         rejectionReason: updateOrderStatusDto.rejectionReason || '',
         orderName : order.orderItems[0].menuItem.name + '외 ' + (order.orderItems.length - 1) + '개',
-        time : '10',
+        time : '10~15',
         link : `https://www.ezpickup.kr/order/${order.orderNumber}`,
       };
 
