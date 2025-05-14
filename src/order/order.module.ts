@@ -16,7 +16,7 @@ import { Store } from '../store/entities/store.entity';
 import { StoreOperationStatus } from '../store/entities/store-operation-status.entity';
 import { FirebaseMessagingModule } from '../notification/firebase-messaging.module';
 import { KakaoTalkService } from '../notification/kakao-talk.service';
-
+import { CustomerProfile } from '../users/entities/customer-profile.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -30,6 +30,7 @@ import { KakaoTalkService } from '../notification/kakao-talk.service';
       OptionItem,
       Store,
       StoreOperationStatus,
+      CustomerProfile,
     ]),
     FirebaseMessagingModule,
   ],

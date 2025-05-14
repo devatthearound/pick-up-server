@@ -22,4 +22,18 @@ export default () => ({
     region: process.env.AWS_REGION || 'ap-northeast-2',
     bucketName: process.env.AWS_S3_BUCKET_NAME || 'growsome',
   },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_PASSWORD,
+  },
+
+  sms: {
+    ncpAccessKeyId: process.env.NCP_ACCESS_KEY_ID,
+    ncpSecret: process.env.NCP_SECRET,
+    ncpServiceId: process.env.NCP_SERVICE_ID,
+    ncpTalkServiceId: process.env.NCP_TALK_SERVICE_ID,
+    uri: process.env.NCP_SMS_URI,
+    mynumber: process.env.SMS_MYNUM,
+  },
 }); 

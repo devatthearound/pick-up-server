@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { RegisterDto, UserRole } from './dto/register.dto';
@@ -11,7 +11,10 @@ import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
 import { DeviceInfo } from '../session/types/device-info.type';
-
+import { RegisterDto2 } from './dto/register2.dto';
+import { LoginDto2 } from './dto/login.dto2';
+import { SmsService } from '../service/smsFunction';
+import { NotFoundError } from 'src/service/errorClass';
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,6 +23,7 @@ export class AuthService {
     @InjectRepository(UserSession)
     private userSessionRepository: Repository<UserSession>,
     private configService: ConfigService,
+    private smsService: SmsService,
   ) {}
 
   private validatePassword(password: string): { isValid: boolean; message: string } {
@@ -95,6 +99,38 @@ export class AuthService {
     };
   }
 
+  async register2(registerDto: RegisterDto2, response: Response) {
+    // 비밀번호 정책 검증 추가
+    const passwordValidation = this.validatePassword(registerDto.password);
+    if (!passwordValidation.isValid) {
+      throw new ConflictException(passwordValidation.message);
+    }
+
+    const user = await this.usersService.register2(registerDto);
+    
+    // createTokens 메서드 사용
+    const tokens = await this.createTokens(
+      user,
+      response.req.headers['user-agent'],
+      response.req.ip || ''
+    );
+
+    return { 
+      message: '회원가입이 완료되었습니다.',
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        role: registerDto.role,
+        profile: registerDto.role === UserRole.CUSTOMER 
+          ? user.customerProfile 
+          : user.ownerProfile,
+      },
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
+    };
+  }
+
   async login(loginDto: LoginDto, response: Response) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     
@@ -120,6 +156,33 @@ export class AuthService {
     };
   }
 
+
+  async login2(loginDto: LoginDto2, response: Response) {
+    const user = await this.validateUser2(loginDto.identifier, loginDto.password);
+    
+    // 디바이스 정보 구조화
+    const deviceInfo = this.parseDeviceInfo(response.req.headers['user-agent'] || '');
+    
+    // 동일 디바이스의 기존 세션 처리
+    await this.handleExistingSession(user.id, deviceInfo);
+    
+    const tokens = await this.createTokens(
+      user,
+      deviceInfo,
+      response.req.ip || ''
+    );
+
+    // 사용자 마지막 로그인 시간 업데이트
+    await this.usersService.updateLastLogin(user.id);
+
+    return { 
+      user: { id: user.id, email: user.email },
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
+    };
+  }
+
+
   async logout(response: Response, sessionId: number) {
     await this.invalidateSession(sessionId);
     return { message: '로그아웃되었습니다.' };
@@ -127,6 +190,20 @@ export class AuthService {
 
   private async validateUser(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
+    }
+
+    return user;
+  }
+
+  private async validateUser2(identifier: string, password: string) {
+    const user = await this.usersService.findByEmailOrPhone(identifier);
     if (!user) {
       throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
     }
@@ -164,9 +241,11 @@ export class AuthService {
       role,
       sessionId: savedSession.id,
       isActive: user.isActive,
-      ...(role === UserRole.OWNER && {
+      ...(role === UserRole.OWNER ? {
         ownerId: user.ownerProfile?.id
-      })
+      } : role === UserRole.CUSTOMER ? {
+        customerId: user.customerProfile?.id
+      } : {})
     };
   
     const [accessToken, refreshToken] = await Promise.all([
@@ -353,5 +432,21 @@ export class AuthService {
     }
     
     return device;
+  }
+
+  async sendSmsCode(phone: string) {
+    const result = await this.smsService.sendSms('+82', phone);
+    return result;
+  }
+
+  async verifySmsCode(phone: string, code: string) {
+    const compareCodeResult = await this.smsService.compareAuthCode(phone, code);
+    if (!compareCodeResult)
+      throw new NotFoundError("인증번호가 일치하지 않습니다");
+    
+    return {
+      code: 200,
+      message: "인증번호가 일치합니다",
+    };
   }
 }

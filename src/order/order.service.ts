@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection, Between, MoreThanOrEqual, LessThanOrEqual, In, Not, Like } from 'typeorm';
 import { Order, OrderStatus, PaymentStatus, PaymentMethod } from './entities/order.entity';
@@ -17,6 +17,7 @@ import { CreatePaymentDto, UpdatePaymentStatusDto } from './dto/payment.dto';
 import { NotificationService } from './notification.service';
 import { KakaoTalkService } from '../notification/kakao-talk.service';
 import { TEMPLATE_CODES } from 'src/notification/constants/kakao-talk.constants';
+import { CustomerProfile } from '../users/entities/customer-profile.entity';
 
 @Injectable()
 export class OrderService {
@@ -39,6 +40,8 @@ export class OrderService {
     private storeRepository: Repository<Store>,
     @InjectRepository(StoreOperationStatus)
     private storeOperationStatusRepository: Repository<StoreOperationStatus>,
+    @InjectRepository(CustomerProfile)
+    private customerRepository: Repository<CustomerProfile>,
     private connection: Connection,
     private notificationService: NotificationService,
     private kakaoTalkService: KakaoTalkService
@@ -237,7 +240,7 @@ export class OrderService {
     return order;
   }
 
-  async create(customerId: number | null, createOrderDto: CreateOrderDto) {
+  async create(customerId: number, createOrderDto: CreateOrderDto) {
      // 매장 정보 조회
     const store = await this.storeRepository.findOne({
       where: { domain: createOrderDto.storeDomain },
@@ -247,6 +250,15 @@ export class OrderService {
      
     if (!store) {
       throw new NotFoundException('매장을 찾을 수 없습니다.');
+    }
+
+    const customer = await this.customerRepository.findOne({
+      where: { id: customerId },
+      relations: ['user'],
+    });
+
+    if (!customer) {
+      throw new NotFoundException('고객을 찾을 수 없습니다.');
     }
 
     // 매장 운영 상태 확인
@@ -278,7 +290,7 @@ export class OrderService {
       // 1. 주문 생성
       const order = queryRunner.manager.create(Order, {
         orderNumber,
-        customerId: customerId || undefined,
+        customerId: customerId,
         storeId: store.id,
         totalAmount,
         discountAmount,
@@ -288,9 +300,9 @@ export class OrderService {
         paymentMethod: createOrderDto.paymentMethod,
         status: OrderStatus.PENDING,
         paymentStatus: PaymentStatus.PENDING,
-        isGuestOrder: !customerId,
-        customerName: createOrderDto.guestInfo.name,
-        customerPhone: createOrderDto.guestInfo.phone,
+        isGuestOrder: false,
+        customerPhone: customer.user.phone || '',
+        customerName: customer.firstName || customer.lastName || '',
       });
 
       const savedOrder = await queryRunner.manager.save(order);
@@ -349,28 +361,28 @@ export class OrderService {
 
       // 4. 알림 생성 및 발송
       // 고객에게 주문 접수 알림
-      if (customerId) {
-        await this.notificationService.createOrderNotification(
-          savedOrder.id,
-          customerId,
-          'customer',
-          'order_created',
-          '주문이 접수되었습니다',
-          `${store.name}에서 주문이 접수되었습니다. 주문번호: ${orderNumber}`,
-        );
-      }
+      // if (customerId) {
+      //   await this.notificationService.createOrderNotification(
+      //     savedOrder.id,
+      //     customerId,
+      //     'customer',
+      //     'order_created',
+      //     '주문이 접수되었습니다',
+      //     `${store.name}에서 주문이 접수되었습니다. 주문번호: ${orderNumber}`,
+      //   );
+      // }
 
 
-      console.log('store.owner.user.id', store.owner.user.id);
-      // 사장님에게 새 주문 알림
-      await this.notificationService.createOrderNotification(
-        savedOrder.id,
-        store.owner.user.id,
-        'owner',
-        'new_order',
-        '☎ 새로운 주문이 접수되었습니다.',
-        `사장님 주문 수락하기를 눌러주세요.`,
-      );
+      // console.log('store.owner.user.id', store.owner.user.id);
+      // // 사장님에게 새 주문 알림
+      // await this.notificationService.createOrderNotification(
+      //   savedOrder.id,
+      //   store.owner.user.id,
+      //   'owner',
+      //   'new_order',
+      //   '☎ 새로운 주문이 접수되었습니다.',
+      //   `사장님 주문 수락하기를 눌러주세요.`,
+      // );
 
       return {
         orderId: savedOrder.id,

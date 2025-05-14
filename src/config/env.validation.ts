@@ -52,6 +52,46 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   JWT_REFRESH_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  REDIS_HOST: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  REDIS_PORT: number;
+
+  @IsString()
+  @IsOptional()
+  REDIS_PASSWORD: string;
+
+  @IsString()
+  @IsNotEmpty()
+  NCP_ACCESS_KEY_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  NCP_SERVICE_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  NCP_TALK_SERVICE_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  NCP_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  NCP_SMS_BASE_URI: string;
+
+  @IsString()
+  @IsNotEmpty()
+  SMS_MYNUM: string;
+
+  @IsString()
+  @IsNotEmpty()
+  NCP_SMS_URI: string;
 }
 
 export function validate(config: Record<string, unknown>) {

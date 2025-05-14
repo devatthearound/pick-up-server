@@ -8,14 +8,14 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ nullable: true, type: 'varchar' })
+  email: string | null;
 
   @Column()
   password: string;
 
-  @Column()
-  phone: string;
+  @Column({ nullable: true, type: 'varchar' })
+  phone: string | null;
 
   @Column({ default: true, name: 'is_active' })
   isActive: boolean;

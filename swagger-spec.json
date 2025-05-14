@@ -46,6 +46,37 @@
         ]
       }
     },
+    "/auth/register2": {
+      "post": {
+        "operationId": "AuthController_register2",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto2"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "회원가입 성공"
+          },
+          "400": {
+            "description": "잘못된 요청"
+          },
+          "409": {
+            "description": "이미 존재하는 이메일"
+          }
+        },
+        "summary": "회원가입",
+        "tags": [
+          "인증"
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "AuthController_login",
@@ -56,6 +87,34 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "로그인 성공"
+          },
+          "401": {
+            "description": "인증 실패"
+          }
+        },
+        "summary": "로그인",
+        "tags": [
+          "인증"
+        ]
+      }
+    },
+    "/auth/login2": {
+      "post": {
+        "operationId": "AuthController_login2",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto2"
               }
             }
           }
@@ -176,6 +235,42 @@
           }
         ],
         "summary": "사장님 전용 정보",
+        "tags": [
+          "인증"
+        ]
+      }
+    },
+    "/auth/send-sms-code": {
+      "post": {
+        "operationId": "AuthController_sendSmsCode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "핸드폰 인증 코드 발송 성공"
+          },
+          "400": {
+            "description": "잘못된 요청"
+          }
+        },
+        "summary": "핸드폰 인증 코드 발송",
+        "tags": [
+          "인증"
+        ]
+      }
+    },
+    "/auth/verify-sms-code": {
+      "post": {
+        "operationId": "AuthController_verifySmsCode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "핸드폰 인증 코드 검증 성공"
+          },
+          "400": {
+            "description": "잘못된 요청"
+          }
+        },
+        "summary": "핸드폰 인증 코드 검증",
         "tags": [
           "인증"
         ]
@@ -3772,6 +3867,11 @@
             "description": "잘못된 요청"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "주문 생성",
         "tags": [
           "주문"
@@ -4404,6 +4504,26 @@
           "알림"
         ]
       }
+    },
+    "/init": {
+      "get": {
+        "operationId": "InitController_initialize",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "초기화 성공"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "초기화",
+        "tags": [
+          "Init"
+        ]
+      }
     }
   },
   "info": {
@@ -4470,6 +4590,51 @@
           "role"
         ]
       },
+      "RegisterDto2": {
+        "type": "object",
+        "properties": {
+          "identifierType": {
+            "type": "string",
+            "enum": [
+              "email",
+              "phone"
+            ],
+            "example": "email",
+            "description": "식별자 타입 (email 또는 phone)"
+          },
+          "identifier": {
+            "type": "string",
+            "example": "user@example.com 또는 010-1234-5678",
+            "description": "이메일 또는 전화번호"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "비밀번호 (최소 6자)"
+          },
+          "user_name": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "이름"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "owner"
+            ],
+            "example": "customer",
+            "description": "사용자 역할"
+          }
+        },
+        "required": [
+          "identifierType",
+          "identifier",
+          "password",
+          "user_name",
+          "role"
+        ]
+      },
       "LoginDto": {
         "type": "object",
         "properties": {
@@ -4486,6 +4651,25 @@
         },
         "required": [
           "email",
+          "password"
+        ]
+      },
+      "LoginDto2": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "example": "user@example.com 또는 010-1234-5678",
+            "description": "이메일 또는 전화번호"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "비밀번호 (최소 6자)"
+          }
+        },
+        "required": [
+          "identifier",
           "password"
         ]
       },
@@ -5331,25 +5515,6 @@
           "quantity"
         ]
       },
-      "GuestInfoDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "홍길동",
-            "description": "비회원 주문 시 고객 이름"
-          },
-          "phone": {
-            "type": "string",
-            "example": "010-1234-5678",
-            "description": "비회원 주문 시 고객 전화번호"
-          }
-        },
-        "required": [
-          "name",
-          "phone"
-        ]
-      },
       "CreateOrderDto": {
         "type": "object",
         "properties": {
@@ -5377,21 +5542,12 @@
               "cash",
               "other"
             ]
-          },
-          "guestInfo": {
-            "description": "비회원 주문 시 고객 정보",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/GuestInfoDto"
-              }
-            ]
           }
         },
         "required": [
           "storeDomain",
           "items",
-          "paymentMethod",
-          "guestInfo"
+          "paymentMethod"
         ]
       },
       "UpdateOrderStatusDto": {

@@ -7,7 +7,8 @@ import { LoginDto } from './dto/login.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
-
+import { RegisterDto2 } from './dto/register2.dto';
+import { LoginDto2 } from './dto/login.dto2';
 @ApiTags('인증')
 @Controller('auth')
 export class AuthController {
@@ -22,6 +23,16 @@ export class AuthController {
     return this.authService.register(registerDto, response);
   }
 
+  @ApiOperation({ summary: '회원가입' })
+  @ApiResponse({ status: 201, description: '회원가입 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @ApiResponse({ status: 409, description: '이미 존재하는 이메일' })
+  @Post('register2')
+  async register2(@Body() registerDto: RegisterDto2, @Res({ passthrough: true }) response: Response) {
+    return this.authService.register2(registerDto, response);
+  }
+
+
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: 200, description: '로그인 성공' })
   @ApiResponse({ status: 401, description: '인증 실패' })
@@ -31,6 +42,18 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     return this.authService.login(loginDto, response);
+  }
+
+
+  @ApiOperation({ summary: '로그인' })
+  @ApiResponse({ status: 200, description: '로그인 성공' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @Post('login2')
+  async login2(
+    @Body() loginDto: LoginDto2,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.login2(loginDto, response);
   }
 
 
@@ -110,4 +133,23 @@ export class AuthController {
   async getOwnerInfo(@Request() req) {
     return { message: '이 정보는 사장님만 볼 수 있습니다.', userId: req.user.id };
   }
+
+
+  @ApiOperation({ summary: '핸드폰 인증 코드 발송' })
+  @ApiResponse({ status: 200, description: '핸드폰 인증 코드 발송 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @Post('send-sms-code')
+  async sendSmsCode(@Body() body: { phone: string }) {
+    return this.authService.sendSmsCode(body.phone);
+  }
+
+  @ApiOperation({ summary: '핸드폰 인증 코드 검증' })
+  @ApiResponse({ status: 200, description: '핸드폰 인증 코드 검증 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @Post('verify-sms-code')
+  async verifySmsCode(@Body() body: { phone: string, code: string }) {
+    return this.authService.verifySmsCode(body.phone, body.code);
+  }
+
+  
 }

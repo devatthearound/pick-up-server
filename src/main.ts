@@ -7,10 +7,14 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
+import { initializeRedis } from './service/redisClientConfig';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  
+  // Redis 초기화
+  await initializeRedis(configService);
   
   // 프론트엔드 주소가 환경변수에 제대로 설정되어 있는지 확인
   const frontendUrl = configService.get('FRONTEND_URL');

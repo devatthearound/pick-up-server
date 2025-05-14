@@ -81,9 +81,4 @@ export class CreateOrderDto {
   @IsEnum(PaymentMethod)
   @IsNotEmpty()
   paymentMethod: PaymentMethod;
-
-  @ApiProperty({ type: GuestInfoDto, description: '비회원 주문 시 고객 정보' })
-  @ValidateNested()
-  @Type(() => GuestInfoDto)
-  guestInfo: GuestInfoDto;
 }

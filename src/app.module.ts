@@ -17,9 +17,13 @@ import { StoreBenefitModule } from './store/store-benefit.module';
 import { OrderModule } from './order/order.module';
 import { NotificationModule } from './notification/notification.module';
 import { SessionModule } from './session/session.module';
+import { InitModule } from './init/init.module';
 // crypto 모듈을 전역으로 사용할 수 있도록 설정
-(global as any).crypto = crypto;
 
+// crypto 객체 설정을 수정
+if (!global.crypto) {
+  (global as any).crypto = crypto;
+}
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -53,6 +57,7 @@ import { SessionModule } from './session/session.module';
     OrderModule,
     NotificationModule,
     SessionModule,
+    InitModule, 
   ],
   controllers: [AppController],
   providers: [AppService],

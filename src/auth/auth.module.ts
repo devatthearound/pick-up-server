@@ -13,6 +13,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PassportModule } from '@nestjs/passport';
 import { SessionService } from '../session/session.service';
+import { SmsService } from '../service/smsFunction';
 
 @Module({
   imports: [
@@ -32,9 +33,10 @@ import { SessionService } from '../session/session.service';
     JwtStrategy, 
     RolesGuard, 
     JwtAuthGuard,
-    SessionService
+    SessionService,
+    SmsService
   ],
   controllers: [AuthController],
-  exports: [AuthService, JwtStrategy, RolesGuard, JwtAuthGuard, SessionService],
+  exports: [AuthService, JwtStrategy, RolesGuard, JwtAuthGuard, SessionService, SmsService],
 })
 export class AuthModule {}

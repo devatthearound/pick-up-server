@@ -86,7 +86,7 @@ import {
       const order = await this.orderService.findByOrderNumber(orderNumber);
       
       // 권한 확인: 고객은 자신의 주문만 조회 가능
-      if (req.user.role === UserRole.CUSTOMER && order.customerId !== req.user.id) {
+      if (req.user.role === UserRole.CUSTOMER && order.customerId !== req.user.customerId) {
         throw new ForbiddenException('해당 주문에 접근할 권한이 없습니다.');
       }
       
@@ -101,19 +101,14 @@ import {
     @ApiOperation({ summary: '주문 생성' })
     @ApiResponse({ status: 201, description: '주문 생성 성공' })
     @ApiResponse({ status: 400, description: '잘못된 요청' })
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.CUSTOMER)
     @Post()
-    async create(@Body() createOrderDto: CreateOrderDto) {
-      // // 회원 주문인 경우 customerId 사용
-      // if (createOrderDto.customerId) {
-      //   return this.orderService.create(createOrderDto.customerId, createOrderDto);
-      // }
-      
-      // // 비회원 주문인 경우 customerPhone과 customerName 사용
-      // if (!createOrderDto.customerPhone || !createOrderDto.customerName) {
-      //   throw new BadRequestException('비회원 주문의 경우 고객 이름과 전화번호가 필요합니다.');
-      // }
-      
-      return this.orderService.create(null, createOrderDto);
+    async create(@Request() req, @Body() createOrderDto: CreateOrderDto) {
+      const customerId = req.user.customerId;
+     
+      return this.orderService.create(customerId, createOrderDto);
     }
   
     @ApiOperation({ summary: '주문 상태 변경' })
