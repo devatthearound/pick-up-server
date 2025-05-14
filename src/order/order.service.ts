@@ -361,28 +361,28 @@ export class OrderService {
 
       // 4. 알림 생성 및 발송
       // 고객에게 주문 접수 알림
-      // if (customerId) {
-      //   await this.notificationService.createOrderNotification(
-      //     savedOrder.id,
-      //     customerId,
-      //     'customer',
-      //     'order_created',
-      //     '주문이 접수되었습니다',
-      //     `${store.name}에서 주문이 접수되었습니다. 주문번호: ${orderNumber}`,
-      //   );
-      // }
+      if (customerId) {
+        await this.notificationService.createOrderNotification(
+          savedOrder.id,
+          customerId,
+          'customer',
+          'order_created',
+          '주문이 접수되었습니다',
+          `${store.name}에서 주문이 접수되었습니다. 주문번호: ${orderNumber}`,
+        );
+      }
 
 
-      // console.log('store.owner.user.id', store.owner.user.id);
-      // // 사장님에게 새 주문 알림
-      // await this.notificationService.createOrderNotification(
-      //   savedOrder.id,
-      //   store.owner.user.id,
-      //   'owner',
-      //   'new_order',
-      //   '☎ 새로운 주문이 접수되었습니다.',
-      //   `사장님 주문 수락하기를 눌러주세요.`,
-      // );
+      console.log('store.owner.user.id', store.owner.user.id);
+      // 사장님에게 새 주문 알림
+      await this.notificationService.createOrderNotification(
+        savedOrder.id,
+        store.owner.user.id,
+        'owner',
+        'new_order',
+        '☎ 새로운 주문이 접수되었습니다.',
+        `사장님 주문 수락하기를 눌러주세요.`,
+      );
 
       return {
         orderId: savedOrder.id,
