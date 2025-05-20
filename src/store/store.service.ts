@@ -100,15 +100,16 @@ export class StoreService {
 
     // 운영시간인지 체크
     const currentTime = new Date();
-    const dayOfWeek = currentTime.getDay();
-    const hours = currentTime.getHours();
-    const minutes = currentTime.getMinutes();
+    const koreaTime = new Date(currentTime.getTime() + (9 * 60 * 60 * 1000));
+    const dayOfWeek = koreaTime.getDay();
+    const hours = koreaTime.getHours();
+    const minutes = koreaTime.getMinutes();
 
     const operationStatus = await this.operatingHoursService.findAllByStoreId(store.id);
 
     console.log("operationStatus", operationStatus);
     // 대소문자 통일
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const today = koreaTime.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
     console.log("today", today);
     const todayOperationStatus = operationStatus.operatingHoursByDay[today];
@@ -119,7 +120,7 @@ export class StoreService {
     }
 
     // 시간을 문자열에서 Date 객체로 변환
-    const todayDate = new Date();
+    const todayDate = new Date(koreaTime);
     console.log("todayDate", todayDate);
     const [openHour, openMinute] = todayOperationStatus.openingTime.split(':').map(Number);
     const [closeHour, closeMinute] = todayOperationStatus.closingTime.split(':').map(Number);
