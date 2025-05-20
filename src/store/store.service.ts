@@ -120,15 +120,18 @@ export class StoreService {
 
     // 시간을 문자열에서 Date 객체로 변환
     const todayDate = new Date();
+    console.log("todayDate", todayDate);
     const [openHour, openMinute] = todayOperationStatus.openingTime.split(':').map(Number);
     const [closeHour, closeMinute] = todayOperationStatus.closingTime.split(':').map(Number);
     
     const openingTime = new Date(todayDate);
     openingTime.setHours(openHour, openMinute, 0, 0);
-    
+    console.log("openingTime", openingTime);
     const closingTime = new Date(todayDate);
     closingTime.setHours(closeHour, closeMinute, 0, 0);
+    console.log("closingTime", closingTime);
 
+    console.log("currentTime", currentTime);
     if (currentTime < openingTime || currentTime > closingTime) {
       throw new BadRequestException('상점이 운영시간이 아닙니다.');
     }
