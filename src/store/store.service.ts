@@ -132,8 +132,8 @@ export class StoreService {
     closingTime.setHours(closeHour, closeMinute, 0, 0);
     console.log("closingTime", closingTime);
 
-    console.log("currentTime", currentTime);
-    if (currentTime < openingTime || currentTime > closingTime) {
+    console.log("koreaTime", koreaTime);
+    if (koreaTime < openingTime || koreaTime > closingTime) {
       throw new BadRequestException('상점이 운영시간이 아닙니다.');
     }
     
